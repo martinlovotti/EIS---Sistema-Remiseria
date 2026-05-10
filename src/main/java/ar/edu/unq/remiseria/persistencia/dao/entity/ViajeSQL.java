@@ -32,7 +32,7 @@ public class ViajeSQL {
 
         viajeSQL.setEstadoViaje(viaje.getEstadoViaje());
         viajeSQL.setCliente(UsuarioSQL.crearDesde(viaje.getCliente()));
-        viajeSQL.setChofer(ChoferSQL.creadDesde(viaje.getChofer()));
+        //viajeSQL.setChofer(ChoferSQL.creadDesde(viaje.getChofer()));
         viajeSQL.setPrecioFinal(viaje.getPrecioFinal());
         viajeSQL.setKilometros(viaje.getKilometros());
 

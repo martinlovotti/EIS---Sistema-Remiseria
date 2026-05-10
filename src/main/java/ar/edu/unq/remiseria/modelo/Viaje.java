@@ -28,4 +28,11 @@ public class Viaje {
         this.estadoViaje = PENDIENTE;
     }
 
+    public Viaje(Usuario cliente, String origen, String destino) {
+        this.cliente = cliente;
+        this.origen = origen;
+        this.destino = destino;
+        this.estadoViaje = PENDIENTE;
+    }
+
 }

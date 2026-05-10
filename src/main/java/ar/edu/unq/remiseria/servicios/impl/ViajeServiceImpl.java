@@ -5,8 +5,11 @@ import ar.edu.unq.remiseria.persistencia.dao.repositorys.ViajeRepository;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@Repository
+@Service
+@Transactional
 public class ViajeServiceImpl implements ViajeService {
     @Autowired
     private ViajeRepository viajeRepository;
@@ -17,9 +20,9 @@ public class ViajeServiceImpl implements ViajeService {
     }
 
     @Override
-    public Viaje crearViaje(Viaje viaje) {
-//        TODO
-        return null;
+    public Viaje crear(Viaje viaje) {
+
+        return viajeRepository.crear(viaje);
     }
 
     @Override

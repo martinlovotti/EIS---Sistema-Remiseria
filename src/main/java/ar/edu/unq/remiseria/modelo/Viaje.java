@@ -1,12 +1,11 @@
 package ar.edu.unq.remiseria.modelo;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.PENDIENTE;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class Viaje {
     private Long id;
@@ -24,6 +23,7 @@ public class Viaje {
 
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
+        this.cliente.agregarViaje(this);
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
     }
@@ -33,6 +33,10 @@ public class Viaje {
         this.origen = origen;
         this.destino = destino;
         this.estadoViaje = PENDIENTE;
+    }
+
+    public boolean estaSolicitado() {
+        return estadoViaje == EstadoViaje.PENDIENTE;
     }
 
 }

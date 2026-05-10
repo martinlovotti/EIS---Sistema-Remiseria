@@ -2,8 +2,10 @@ package ar.edu.unq.remiseria.persistencia.dao.repositorys.impl;
 
 import ar.edu.unq.remiseria.exception.UsuarioNoEncontradoException;
 import ar.edu.unq.remiseria.modelo.Usuario;
+import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
 import ar.edu.unq.remiseria.persistencia.dao.entity.UsuarioSQL;
+import ar.edu.unq.remiseria.persistencia.dao.entity.ViajeSQL;
 import ar.edu.unq.remiseria.persistencia.dao.repositorys.UsuarioRepository;
 import org.springframework.stereotype.Component;
 
@@ -51,9 +53,43 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public void actualizar(Usuario u) {
+        UsuarioSQL usuarioSQL = usuarioDAO.findById(u.getId())
+                .orElseThrow(() -> new UsuarioNoEncontradoException("No existe usuario"));
+
+        usuarioSQL.setNombre(u.getNombre());
+
+        List<ViajeSQL> viajes = u.getViajes().stream().map(v -> {
+            ViajeSQL viajeSQL = ViajeSQL.from(v);
+            viajeSQL.setCliente(usuarioSQL);
+            return viajeSQL;
+        }).collect(Collectors.toList());
+
+        usuarioSQL.setViajes(viajes);
+
+        usuarioDAO.save(usuarioSQL);
+
+    }
+
     public Usuario usuarioToModel(UsuarioSQL u){
         Usuario usuario = new Usuario();
         usuario.setNombre(u.getNombre());
+        usuario.setId(u.getId());
+
+        List<Viaje> viajes = u.getViajes().stream().map(v -> {
+            Viaje viaje = new Viaje();
+            viaje.setId(v.getId());
+            viaje.setOrigen(v.getOrigen());
+            viaje.setDestino(v.getDestino());
+            viaje.setEstadoViaje(v.getEstadoViaje());
+            viaje.setPrecioFinal(v.getPrecioFinal());
+            viaje.setKilometros(v.getKilometros());
+            return viaje;
+        }).collect(Collectors.toList());
+
+        usuario.setViajes(viajes);
+
         return usuario;
     }
 }

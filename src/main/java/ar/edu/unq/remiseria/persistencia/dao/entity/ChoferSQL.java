@@ -4,10 +4,7 @@ import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.Check;
 
 import java.util.List;

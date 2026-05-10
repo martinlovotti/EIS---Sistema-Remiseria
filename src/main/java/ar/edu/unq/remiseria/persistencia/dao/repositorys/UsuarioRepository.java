@@ -1,8 +1,6 @@
 package ar.edu.unq.remiseria.persistencia.dao.repositorys;
 
 import ar.edu.unq.remiseria.modelo.Usuario;
-import ar.edu.unq.remiseria.persistencia.dao.entity.UsuarioSQL;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 

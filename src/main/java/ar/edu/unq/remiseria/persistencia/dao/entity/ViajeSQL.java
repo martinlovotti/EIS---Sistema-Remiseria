@@ -4,9 +4,14 @@ import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
 @Entity
+@NoArgsConstructor
+@Getter
+@Setter
 public class ViajeSQL {
     @Id
     @GeneratedValue
@@ -30,9 +35,9 @@ public class ViajeSQL {
     public static ViajeSQL from(Viaje viaje) {
         ViajeSQL viajeSQL = new ViajeSQL();
 
+        viajeSQL.setOrigen(viaje.getOrigen());
+        viajeSQL.setDestino(viaje.getDestino());
         viajeSQL.setEstadoViaje(viaje.getEstadoViaje());
-        viajeSQL.setCliente(UsuarioSQL.crearDesde(viaje.getCliente()));
-        //viajeSQL.setChofer(ChoferSQL.creadDesde(viaje.getChofer()));
         viajeSQL.setPrecioFinal(viaje.getPrecioFinal());
         viajeSQL.setKilometros(viaje.getKilometros());
 
@@ -43,11 +48,12 @@ public class ViajeSQL {
         Viaje viaje = new Viaje();
 
         viaje.setEstadoViaje(viajeSQL.getEstadoViaje());
-        viaje.setCliente(UsuarioSQL.toModel(viajeSQL.getCliente()));
+        //viaje.setCliente(UsuarioSQL.toModel(viajeSQL.getCliente()));
         //viaje.setChofer(ChoferSQL.toModel(viajeSQL.getChofer()));
         viaje.setPrecioFinal(viajeSQL.getPrecioFinal());
         viaje.setKilometros(viajeSQL.getKilometros());
 
         return viaje;
     }
+
 }

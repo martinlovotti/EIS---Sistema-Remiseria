@@ -7,10 +7,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.Check;
+
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static jakarta.persistence.GenerationType.AUTO;
 
 @Setter
 @Getter
-@ToString
 @NoArgsConstructor
 @Entity(name = "Usuario")
 @Table(name = "Usuario")
@@ -22,12 +28,15 @@ public class UsuarioSQL {
     @NotNull(message = "El nombre no puede ser nulo")
     private String nombre;
 
-    //@OneToMany
-    //private List<Viaje> viajes;
+    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<ViajeSQL> viajes = new ArrayList<>();
 
     public static UsuarioSQL crearDesde(Usuario model){
         UsuarioSQL usuarioSQL = new UsuarioSQL();
         usuarioSQL.setNombre(model.getNombre());
+        usuarioSQL.setViajes(model.getViajes().stream().map(ViajeSQL::from).toList());
+
+
 
         return usuarioSQL;
     }

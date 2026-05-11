@@ -9,4 +9,5 @@ public interface UsuarioRepository{
     Usuario recuperar(Long id);
     void eliminar(Long id);
     List<Usuario> recuperarTodos();
+    void actualizar(Usuario u);
 }

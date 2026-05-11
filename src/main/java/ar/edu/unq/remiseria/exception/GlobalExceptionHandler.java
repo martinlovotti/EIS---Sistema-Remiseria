@@ -12,5 +12,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleViajeNoPuedeCancelarse(ViajeNoPuedeCancelarseException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
-}
 
+    @ExceptionHandler(UsuarioConViajeSolicitadoException.class)
+    public ResponseEntity<String> manejarUsuarioConViaje(UsuarioConViajeSolicitadoException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ex.getMessage());
+    }
+}

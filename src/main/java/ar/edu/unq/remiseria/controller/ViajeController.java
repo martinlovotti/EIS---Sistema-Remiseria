@@ -24,7 +24,7 @@ public class ViajeController {
     }
 
     @PostMapping
-    public ResponseEntity<RecuperarViajeDTO> crearViaje(CrearViajeDTO viajeDTO) {
+    public ResponseEntity<RecuperarViajeDTO> crearViaje(@RequestBody CrearViajeDTO viajeDTO) {
         Usuario usuario = usuarioService.recuperar(viajeDTO.usuarioId());
         Viaje viaje = viajeService.crear(viajeDTO.aModelo(usuario));
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);

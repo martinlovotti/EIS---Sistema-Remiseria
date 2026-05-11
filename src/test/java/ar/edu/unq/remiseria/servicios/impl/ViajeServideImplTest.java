@@ -1,6 +1,7 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
+import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -34,7 +35,7 @@ public class ViajeServideImplTest {
     void setUp() {
         cliente = new Usuario();
         cliente.setNombre("Pepe");
-        usuarioService.crear(cliente);
+        cliente = usuarioService.crear(cliente);
         chofer = new Chofer();
         viaje = new Viaje(cliente, chofer);
         viajeSinChofer = new Viaje(cliente, "Quilmes", "Bernal");
@@ -49,8 +50,14 @@ public class ViajeServideImplTest {
     @Test
     public void crearViajeTest() {
         assertNull(viaje.getId());
-        viajeService.crear(viaje);
-        assertNotNull(viaje.getId());
+        Viaje viajeCreado = viajeService.crear(viaje);
+        assertNotNull(viajeCreado.getId());
+    }
+
+    @Test
+    public void unViajeCreadoTieneUnClienteQuienLoSolicitoTest() {
+        Viaje viajeCreado = viajeService.crear(viajeSinChofer);
+        assertEquals(viajeCreado.getCliente().getId(), cliente.getId());
     }
 
     @Test
@@ -63,6 +70,15 @@ public class ViajeServideImplTest {
     public  void unViajeRecienCreadoNoTieneChoferAsignadoTest() {
         viajeService.crear(viajeSinChofer);
         assertNull(viajeSinChofer.getChofer());
+    }
+
+    @Test
+    public void crearViajeParaUnClienteQueYaTieneViajeSolicitadoLanzaExcepcionTest() {
+        viajeService.crear(viajeSinChofer);
+        Usuario clienteRecuperado = usuarioService.recuperar(cliente.getId());
+        Viaje viajeSolicitado = new Viaje(clienteRecuperado, "Ezpeleta", "Berazategui");
+
+        assertThrows(UsuarioConViajeSolicitadoException.class, () -> viajeService.crear(viajeSolicitado));
     }
 
     @Test

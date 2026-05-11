@@ -1,0 +1,16 @@
+package ar.edu.unq.remiseria.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ViajeNoPuedeCancelarseException.class)
+    public ResponseEntity<String> handleViajeNoPuedeCancelarse(ViajeNoPuedeCancelarseException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+}
+

@@ -9,10 +9,7 @@ import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin
@@ -32,5 +29,13 @@ public class ViajeController {
         Viaje viaje = viajeService.crear(viajeDTO.aModelo(usuario));
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public ResponseEntity<RecuperarViajeDTO> cancelarViaje(@PathVariable Long id) {
+            viajeService.cancelarViaje(id);
+            Viaje viaje = viajeService.recuperar(id);
+            RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
+            return ResponseEntity.ok(dto);
     }
 }

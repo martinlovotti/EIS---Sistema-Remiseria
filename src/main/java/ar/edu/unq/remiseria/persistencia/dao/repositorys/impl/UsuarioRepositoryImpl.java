@@ -30,7 +30,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     @Override
     public Usuario recuperar(Long id) {
         UsuarioSQL sql = usuarioDAO.recuperar(id);
-        return usuarioToModel(sql);
+        return UsuarioSQL.toModel(sql);
     }
 
     @Override
@@ -46,14 +46,9 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
                 .map( sql ->{
                     UsuarioSQL us = usuarioDAO.findById(sql.getId())
                             .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado con id: " + sql.getId()));
-                    return usuarioToModel(us);
+                    return UsuarioSQL.toModel(us);
                 })
                 .collect(Collectors.toList());
     }
 
-    public Usuario usuarioToModel(UsuarioSQL u){
-        Usuario usuario = new Usuario();
-        usuario.setNombre(u.getNombre());
-        return usuario;
-    }
 }

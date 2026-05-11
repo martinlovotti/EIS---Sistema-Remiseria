@@ -1,10 +1,10 @@
 package ar.edu.unq.remiseria.modelo;
 
-import lombok.AllArgsConstructor;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static ar.edu.unq.remiseria.modelo.EstadoViaje.PENDIENTE;
+import static ar.edu.unq.remiseria.modelo.EstadoViaje.*;
 
 @Data
 @NoArgsConstructor
@@ -33,6 +33,14 @@ public class Viaje {
         this.origen = origen;
         this.destino = destino;
         this.estadoViaje = PENDIENTE;
+    }
+
+    public void cancelar() {
+        if (!(estadoViaje == PENDIENTE || estadoViaje == ACEPTADO)) {
+            throw new ViajeNoPuedeCancelarseException();
+        }
+
+        this.setEstadoViaje(CANCELADO);
     }
 
 }

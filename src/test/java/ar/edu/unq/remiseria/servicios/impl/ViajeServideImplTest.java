@@ -1,5 +1,6 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -81,5 +82,38 @@ public class ViajeServideImplTest {
         assertEquals(3300.0, viaje.getPrecioFinal());
 
     };
+
+    @Test
+    public void unViajeEnEstadoPendienteSeCancelaTest() {
+        Viaje viaje = viajeService.crear(viajeSinChofer);
+        viajeService.cancelarViaje(viaje.getId());
+
+        Viaje viajeCancelado = viajeService.recuperar(viaje.getId());
+
+        assertEquals(EstadoViaje.CANCELADO, viajeCancelado.getEstadoViaje());
+    }
+
+    @Test
+    public void unViajeEnEstadoAceptadoSeCancelaTest() {
+        viaje.setEstadoViaje(EstadoViaje.ACEPTADO);
+        Viaje viajeAceptado = viajeService.crear(viaje);
+        viajeService.cancelarViaje(viajeAceptado.getId());
+
+        Viaje viajeCancelado = viajeService.recuperar(viajeAceptado.getId());
+
+        assertEquals(EstadoViaje.CANCELADO, viajeCancelado.getEstadoViaje());
+    }
+
+    @Test
+    public void unViajeEnEstadoEnCursoNoPuedeCancelarseTest() {
+        viaje.setEstadoViaje(EstadoViaje.EN_CURSO);
+        Viaje viajeEnCurso = viajeService.crear(viaje);
+
+        assertThrows(
+                ViajeNoPuedeCancelarseException.class, () ->
+                        viajeService.cancelarViaje(viajeEnCurso.getId())
+        );
+    }
+
 
 }

@@ -1,19 +1,12 @@
 package ar.edu.unq.remiseria.persistencia.dao.entity;
 
 import ar.edu.unq.remiseria.modelo.Usuario;
-import ar.edu.unq.remiseria.modelo.Viaje;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.Check;
-
-
-import java.util.List;
-
-import static jakarta.persistence.GenerationType.AUTO;
 
 @Setter
 @Getter
@@ -37,6 +30,12 @@ public class UsuarioSQL {
         usuarioSQL.setNombre(model.getNombre());
 
         return usuarioSQL;
+    }
+
+    public static Usuario toModel(UsuarioSQL sql) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(sql.getNombre());
+        return usuario;
     }
 
     public UsuarioSQL(Usuario model){

@@ -38,4 +38,16 @@ public class ViajeSQL {
 
         return viajeSQL;
     }
+
+    public static Viaje toModel(ViajeSQL viajeSQL) {
+        Viaje viaje = new Viaje();
+
+        viaje.setEstadoViaje(viajeSQL.getEstadoViaje());
+        viaje.setCliente(UsuarioSQL.toModel(viajeSQL.getCliente()));
+        //viaje.setChofer(ChoferSQL.toModel(viajeSQL.getChofer()));
+        viaje.setPrecioFinal(viajeSQL.getPrecioFinal());
+        viaje.setKilometros(viajeSQL.getKilometros());
+
+        return viaje;
+    }
 }

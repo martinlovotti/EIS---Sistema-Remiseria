@@ -1,12 +1,15 @@
 package ar.edu.unq.remiseria.servicios.interfaces;
 
-import ar.edu.unq.remiseria.modelo.Viaje;import org.springframework.stereotype.Service;
+import ar.edu.unq.remiseria.modelo.Viaje;
 
 
 public interface ViajeService {
-    public void editarViaje(Viaje viaje, Long viajeId);
+    void editarViaje(Viaje viaje, Long viajeId);
 
-    public Viaje crear(Viaje viaje);
+    Viaje crear(Viaje viaje);
+
+    void cancelarViaje(Long viajeId);
 
     Viaje recuperar(Long viajeId);
+
 }

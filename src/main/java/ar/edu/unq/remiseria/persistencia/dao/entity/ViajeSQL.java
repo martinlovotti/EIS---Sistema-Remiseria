@@ -50,6 +50,8 @@ public class ViajeSQL {
         viaje.setEstadoViaje(viajeSQL.getEstadoViaje());
         //viaje.setCliente(UsuarioSQL.toModel(viajeSQL.getCliente()));
         //viaje.setChofer(ChoferSQL.toModel(viajeSQL.getChofer()));
+        viaje.setOrigen(viajeSQL.getOrigen());
+        viaje.setDestino(viajeSQL.getDestino());
         viaje.setPrecioFinal(viajeSQL.getPrecioFinal());
         viaje.setKilometros(viajeSQL.getKilometros());
 

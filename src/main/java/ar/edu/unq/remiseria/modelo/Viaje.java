@@ -24,7 +24,7 @@ public class Viaje {
 
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
-        this.cliente.agregarViaje(this);
+        this.cliente.solicitarViaje(this);
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
     }

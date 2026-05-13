@@ -37,7 +37,7 @@ public class ViajeRepositoryImpl implements ViajeRepository {
     @Override
     public Viaje recuperar(Long viajeId) {
         ViajeSQL viajeSQL = viajeDAO.findById(viajeId).orElseThrow(ViajeNoEncontradoException::new);
-        return ViajeSQL.toModel(viajeSQL);
+        return viajeSQL.toModel();
     }
 
     @Override

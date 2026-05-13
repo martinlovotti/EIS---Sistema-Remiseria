@@ -1,6 +1,7 @@
 package ar.edu.unq.remiseria.persistencia.dao.entity;
 
 import ar.edu.unq.remiseria.modelo.Usuario;
+import ar.edu.unq.remiseria.modelo.Viaje;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -12,8 +13,11 @@ import org.hibernate.annotations.Check;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static jakarta.persistence.GenerationType.AUTO;
+import static java.util.Objects.isNull;
 
 @Setter
 @Getter
@@ -28,22 +32,28 @@ public class UsuarioSQL {
     @NotNull(message = "El nombre no puede ser nulo")
     private String nombre;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<ViajeSQL> viajes = new ArrayList<>();
+    @OneToOne
+    private ViajeSQL viajeActual;
 
-    public static UsuarioSQL crearDesde(Usuario model){
+    public static UsuarioSQL crearDesde(Usuario usuario){
         UsuarioSQL usuarioSQL = new UsuarioSQL();
-        usuarioSQL.setNombre(model.getNombre());
-        usuarioSQL.setViajes(model.getViajes().stream().map(ViajeSQL::from).toList());
+        usuarioSQL.setNombre(usuario.getNombre());
 
-
+        if (!isNull(usuario.getViajeActual())) {
+            usuarioSQL.setViajeActual(ViajeSQL.from(usuario.getViajeActual()));
+        }
 
         return usuarioSQL;
     }
 
-    public static Usuario toModel(UsuarioSQL sql) {
+    public Usuario toModel() {
         Usuario usuario = new Usuario();
-        usuario.setNombre(sql.getNombre());
+        usuario.setNombre(getNombre());
+        usuario.setId(getId());
+        if (!isNull(getViajeActual())) {
+            usuario.setViajeActual(getViajeActual().toModel());
+        }
+
         return usuario;
     }
 

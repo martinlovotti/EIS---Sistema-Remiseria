@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static java.util.Objects.isNull;
+
 @Entity
 @NoArgsConstructor
 @Getter
@@ -26,15 +28,16 @@ public class ViajeSQL {
     @Enumerated(EnumType.STRING)
     private EstadoViaje estadoViaje;
 
-    @ManyToOne
+    @OneToOne(optional = false)
     private UsuarioSQL cliente;
 
-    @ManyToOne
+    @OneToOne
     private ChoferSQL chofer;
 
     public static ViajeSQL from(Viaje viaje) {
         ViajeSQL viajeSQL = new ViajeSQL();
 
+        viajeSQL.setId(viaje.getId());
         viajeSQL.setOrigen(viaje.getOrigen());
         viajeSQL.setDestino(viaje.getDestino());
         viajeSQL.setEstadoViaje(viaje.getEstadoViaje());
@@ -44,16 +47,16 @@ public class ViajeSQL {
         return viajeSQL;
     }
 
-    public static Viaje toModel(ViajeSQL viajeSQL) {
+    public Viaje toModel() {
         Viaje viaje = new Viaje();
 
-        viaje.setEstadoViaje(viajeSQL.getEstadoViaje());
-        //viaje.setCliente(UsuarioSQL.toModel(viajeSQL.getCliente()));
-        //viaje.setChofer(ChoferSQL.toModel(viajeSQL.getChofer()));
-        viaje.setOrigen(viajeSQL.getOrigen());
-        viaje.setDestino(viajeSQL.getDestino());
-        viaje.setPrecioFinal(viajeSQL.getPrecioFinal());
-        viaje.setKilometros(viajeSQL.getKilometros());
+        viaje.setEstadoViaje(getEstadoViaje());
+        //viaje.setCliente(UsuarioSQL.toModel(getCliente()));
+        //viaje.setChofer(ChoferSQL.toModel(getChofer()));
+        viaje.setOrigen(getOrigen());
+        viaje.setDestino(getDestino());
+        viaje.setPrecioFinal(getPrecioFinal());
+        viaje.setKilometros(getKilometros());
 
         return viaje;
     }

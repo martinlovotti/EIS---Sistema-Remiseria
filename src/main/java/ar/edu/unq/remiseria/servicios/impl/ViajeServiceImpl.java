@@ -35,11 +35,11 @@ public class ViajeServiceImpl implements ViajeService {
             throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
         }
 
-        usuario.agregarViaje(viaje);
-
+        usuario.solicitarViaje(viaje);
+        Viaje viajeCreado = viajeRepository.crear(viaje);
         usuarioRepository.actualizar(usuario);
 
-        return viajeRepository.crear(viaje);
+        return viajeCreado;
     }
 
     @Override

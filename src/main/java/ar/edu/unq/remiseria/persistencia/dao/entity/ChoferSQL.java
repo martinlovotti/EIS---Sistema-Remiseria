@@ -29,8 +29,8 @@ public class ChoferSQL {
     @NotNull(message = "La patente no puede ser nula")
     private String patente;
 
-    //@OneToMany
-    //private List<Viaje> viajes;
+    @OneToOne
+    private ViajeSQL viajeActual;
 
     public static ChoferSQL creadDesde(Chofer model) {
         ChoferSQL choferSQL = new ChoferSQL();

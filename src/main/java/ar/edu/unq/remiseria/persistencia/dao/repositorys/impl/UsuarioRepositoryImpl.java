@@ -32,7 +32,7 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
     @Override
     public Usuario recuperar(Long id) {
         UsuarioSQL sql = usuarioDAO.recuperar(id);
-        return usuarioToModel(sql);
+        return sql.toModel();
     }
 
     @Override
@@ -46,50 +46,23 @@ public class UsuarioRepositoryImpl implements UsuarioRepository {
 
         return  usuariosSQL.stream()
                 .map( sql ->{
-                    UsuarioSQL us = usuarioDAO.findById(sql.getId())
+                    UsuarioSQL usuario = usuarioDAO.findById(sql.getId())
                             .orElseThrow(() -> new UsuarioNoEncontradoException("Usuario no encontrado con id: " + sql.getId()));
-                    return usuarioToModel(us);
+                    return usuario.toModel();
                 })
                 .collect(Collectors.toList());
     }
 
     @Override
-    public void actualizar(Usuario u) {
-        UsuarioSQL usuarioSQL = usuarioDAO.findById(u.getId())
+    public void actualizar(Usuario usuario) {
+        UsuarioSQL usuarioSQL = usuarioDAO.findById(usuario.getId())
                 .orElseThrow(() -> new UsuarioNoEncontradoException("No existe usuario"));
 
-        usuarioSQL.setNombre(u.getNombre());
-
-        List<ViajeSQL> viajes = u.getViajes().stream().map(v -> {
-            ViajeSQL viajeSQL = ViajeSQL.from(v);
-            viajeSQL.setCliente(usuarioSQL);
-            return viajeSQL;
-        }).collect(Collectors.toList());
-
-        usuarioSQL.setViajes(viajes);
+        usuarioSQL.setNombre(usuario.getNombre());
+        ViajeSQL viajeSQL = ViajeSQL.from(usuario.getViajeActual());
+        viajeSQL.setCliente(usuarioSQL);
+        usuarioSQL.setViajeActual(viajeSQL);
 
         usuarioDAO.save(usuarioSQL);
-
-    }
-
-    public Usuario usuarioToModel(UsuarioSQL u){
-        Usuario usuario = new Usuario();
-        usuario.setNombre(u.getNombre());
-        usuario.setId(u.getId());
-
-        List<Viaje> viajes = u.getViajes().stream().map(v -> {
-            Viaje viaje = new Viaje();
-            viaje.setId(v.getId());
-            viaje.setOrigen(v.getOrigen());
-            viaje.setDestino(v.getDestino());
-            viaje.setEstadoViaje(v.getEstadoViaje());
-            viaje.setPrecioFinal(v.getPrecioFinal());
-            viaje.setKilometros(v.getKilometros());
-            return viaje;
-        }).collect(Collectors.toList());
-
-        usuario.setViajes(viajes);
-
-        return usuario;
     }
 }

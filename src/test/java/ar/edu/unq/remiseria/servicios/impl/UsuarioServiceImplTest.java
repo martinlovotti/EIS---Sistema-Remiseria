@@ -39,5 +39,4 @@ public class UsuarioServiceImplTest {
         service.eliminar(user.getId());
         assertEquals(0, service.recuperarTodos().size() );
     }
-
 }

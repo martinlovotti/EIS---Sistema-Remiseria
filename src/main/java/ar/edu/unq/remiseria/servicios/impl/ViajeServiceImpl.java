@@ -55,4 +55,19 @@ public class ViajeServiceImpl implements ViajeService {
     public Viaje recuperar(Long viajeId) {
         return viajeRepository.recuperar(viajeId);
     }
+
+    @Override
+    public void aceptarViaje(Long viajeId, Long choferId) {
+
+    }
+
+    @Override
+    public void iniciarViaje(Long viajeId) {
+
+    }
+
+    @Override
+    public void finalizarViaje(Long viajeId) {
+
+    }
 }

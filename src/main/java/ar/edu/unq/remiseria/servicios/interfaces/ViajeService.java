@@ -12,4 +12,10 @@ public interface ViajeService {
 
     Viaje recuperar(Long viajeId);
 
+    void aceptarViaje(Long viajeId, Long choferId);
+
+    void iniciarViaje(Long viajeId);
+
+    void finalizarViaje(Long viajeId); // Setea en null el viaje del lado del cliente y del chofer
+
 }

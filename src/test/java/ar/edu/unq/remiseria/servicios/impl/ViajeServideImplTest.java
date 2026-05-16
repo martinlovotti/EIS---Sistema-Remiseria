@@ -2,6 +2,7 @@ package ar.edu.unq.remiseria.servicios.impl;
 
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -173,5 +174,27 @@ public class ViajeServideImplTest {
         assertEquals(null, viajeActualizado.getChofer().getViajeActual());
     }
 
+    @Test
+    public void viajeAceptadoInicia(){
+        viaje.setEstadoViaje(EstadoViaje.ACEPTADO);
+        Viaje viajeAceptado = viajeService.crear(viaje);
 
+        viajeService.iniciarViaje(viajeAceptado.getId());
+
+        Viaje viajeIniciado = viajeService.recuperar(viajeAceptado.getId());
+
+        assertEquals(EstadoViaje.EN_CURSO, viajeIniciado.getEstadoViaje());
+    }
+
+    @Test
+    public void viajeNoAceptadoInicia(){
+        viaje.setEstadoViaje(EstadoViaje.PENDIENTE);
+        Viaje viajeP = viajeService.crear(viaje);
+
+        assertThrows(
+                ViajeNoPuedeInicializarseException.class, () ->
+                        viajeService.iniciarViaje(viajeP.getId())
+        );
+
+    }
 }

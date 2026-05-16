@@ -111,6 +111,17 @@ public class ViajeServiceImpl implements ViajeService {
 
     @Override
     public void iniciarViaje(Long viajeId) {
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
+
+        viaje.inicializarViaje();
+
+        Chofer chofer = viaje.getChofer();
+        Usuario usuario = viaje.getCliente();
+
+        viajeDAO.save(viajeMapper.fromModel(viaje));
+        usuarioDAO.save(usuarioMapper.fromModel(usuario));
+        choferDAO.save(choferMapper.fromModel(chofer));
 
     }
 

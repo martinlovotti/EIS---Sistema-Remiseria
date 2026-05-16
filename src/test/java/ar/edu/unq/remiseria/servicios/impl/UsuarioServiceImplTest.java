@@ -24,7 +24,7 @@ public class UsuarioServiceImplTest {
     @BeforeEach
     void prepare(){
         usuarioDAO.deleteAll();
-        u = new Usuario("jaime");
+        u = new Usuario("aaa");
     }
 
     @Test

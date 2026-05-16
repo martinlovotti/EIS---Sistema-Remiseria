@@ -4,7 +4,7 @@ import ar.edu.unq.remiseria.modelo.Viaje;
 
 
 public interface ViajeService {
-    void editarViaje(Viaje viaje, Long viajeId);
+    void editarViaje(Viaje viaje);
 
     Viaje crear(Viaje viaje);
 

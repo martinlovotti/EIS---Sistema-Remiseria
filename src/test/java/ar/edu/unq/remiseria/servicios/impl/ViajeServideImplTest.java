@@ -84,12 +84,12 @@ public class ViajeServideImplTest {
     @Test
     public void editarViaje() {
         Viaje viajeCreado = viajeService.crear(viaje);
-        viaje.setOrigen("Ezpeleta");
-        viaje.setDestino("Berazategui");
-        viaje.setKilometros(2.5);
-        viaje.setPrecioFinal(3300.0);
+        viajeCreado.setOrigen("Ezpeleta");
+        viajeCreado.setDestino("Berazategui");
+        viajeCreado.setKilometros(2.5);
+        viajeCreado.setPrecioFinal(3300.0);
 
-        viajeService.editarViaje(viaje, viajeCreado.getId());
+        viajeService.editarViaje(viajeCreado);
 
         viaje = viajeService.recuperar(viajeCreado.getId());
         assertEquals("Ezpeleta", viaje.getOrigen());

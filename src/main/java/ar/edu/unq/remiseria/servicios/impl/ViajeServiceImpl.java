@@ -3,8 +3,12 @@ package ar.edu.unq.remiseria.servicios.impl;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
-import ar.edu.unq.remiseria.persistencia.dao.repositorys.UsuarioRepository;
-import ar.edu.unq.remiseria.persistencia.dao.repositorys.ViajeRepository;
+import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
+import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
+import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
+import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
+import ar.edu.unq.remiseria.persistencia.mapper.UsuarioMapper;
+import ar.edu.unq.remiseria.persistencia.mapper.ViajeMapper;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,47 +17,61 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ViajeServiceImpl implements ViajeService {
 
-    private ViajeRepository viajeRepository;
-    private UsuarioRepository usuarioRepository;
+    private final ViajeDAO viajeDAO;
+    private final UsuarioDAO usuarioDAO;
+    private final ViajeMapper viajeMapper;
+    private final UsuarioMapper usuarioMapper;
 
-    public ViajeServiceImpl(ViajeRepository viajeRepository, UsuarioRepository usuarioRepository) {
-        this.viajeRepository = viajeRepository;
-        this.usuarioRepository = usuarioRepository;
-    }
-
-
-    @Override
-    public void editarViaje(Viaje viaje, Long viajeId) {
-        viajeRepository.editar(viaje, viajeId);
+    public ViajeServiceImpl(ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, ViajeMapper viajeMapper, UsuarioMapper usuarioMapper) {
+        this.viajeDAO = viajeDAO;
+        this.usuarioDAO = usuarioDAO;
+        this.viajeMapper = viajeMapper;
+        this.usuarioMapper = usuarioMapper;
     }
 
     @Override
     public Viaje crear(Viaje viaje) {
-        Usuario usuario = usuarioRepository.recuperar(viaje.getCliente().getId());
+        UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());
+        Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
 
-        if(usuario.tieneViajeSolicitado()) {
+        if (usuarioModelo.tieneViajeSolicitado()) {
             throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
         }
 
-        usuario.solicitarViaje(viaje);
-        Viaje viajeCreado = viajeRepository.crear(viaje);
-        usuarioRepository.actualizar(usuario);
+        usuarioModelo.solicitarViaje(viaje);
 
-        return viajeCreado;
+        ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
+
+        ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
+
+        usuarioDAO.save(usuarioMapper.fromModel(usuarioModelo));
+
+        return viajeMapper.toModel(viajeGuardado);
     }
 
     @Override
     public void cancelarViaje(Long viajeId) {
-        Viaje viaje = viajeRepository.recuperar(viajeId);
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
 
         viaje.cancelar();
 
-        viajeRepository.editar(viaje, viajeId);
+        viajeDAO.save(viajeMapper.fromModel(viaje));
     }
 
     @Override
     public Viaje recuperar(Long viajeId) {
-        return viajeRepository.recuperar(viajeId);
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        return viajeMapper.toModel(viajeSQL);
+    }
+
+    @Override
+    public void editarViaje(Viaje viaje) {
+        ViajeSQL viajeExistente = viajeDAO.recuperar(viaje.getId());
+
+        // aca habria que agregar una logica para chequear que solo se esten modificando campos permitidos
+
+        viajeDAO.save(viajeMapper.fromModel(viaje));
     }
 
     @Override

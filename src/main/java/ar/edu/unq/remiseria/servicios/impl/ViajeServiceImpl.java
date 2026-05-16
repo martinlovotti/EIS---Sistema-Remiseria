@@ -3,6 +3,7 @@ package ar.edu.unq.remiseria.servicios.impl;
 import ar.edu.unq.remiseria.exception.DestinoInvalidoException;
 import ar.edu.unq.remiseria.exception.OrigenInvalidoException;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeYaIniciadoException;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
@@ -15,6 +16,7 @@ import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import static ar.edu.unq.remiseria.modelo.EstadoViaje.ACEPTADO;
 import static java.util.Objects.isNull;
 
 @Service
@@ -73,9 +75,14 @@ public class ViajeServiceImpl implements ViajeService {
     public Viaje editarViaje(Viaje viaje) {
         ViajeSQL viajeExistente = viajeDAO.recuperar(viaje.getId());
 
+        if (viajeExistente.getEstadoViaje() == ACEPTADO) {
+            throw new ViajeYaIniciadoException();
+        }
+
         if (isNull(viaje.getDestino()) || viaje.getDestino().isBlank()) {
             throw new DestinoInvalidoException();
         }
+
         if (isNull(viaje.getOrigen()) || viaje.getOrigen().isBlank()) {
             throw new OrigenInvalidoException();
         }

@@ -143,6 +143,16 @@ public class ViajeServideImplTest {
     }
 
     @Test
+    public void editarViajeSiElViajeEstaEnCursoLanzaExcepcion() {
+        Viaje viajeCreado = viajeService.crear(viaje);
+        viajeService.aceptarViaje(viajeCreado.getId(), choferService.crear(chofer).getId());
+
+        assertThrows(ViajeYaIniciadoException.class, () -> {
+            viajeService.editarViaje(viajeCreado);
+        });
+    }
+
+    @Test
     public void editarViajeSiElViajeNoExisteLanzaExcepcionTest() {
         Viaje viajeNoExistente = viaje;
         viajeNoExistente.setId(912L);

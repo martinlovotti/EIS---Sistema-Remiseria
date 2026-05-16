@@ -1,5 +1,6 @@
 package ar.edu.unq.remiseria.persistencia.dao;
 
+import ar.edu.unq.remiseria.exception.ViajeNoEncontradoException;
 import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,7 @@ import java.util.List;
 public interface ViajeDAO extends JpaRepository<ViajeSQL, Long> {
 
     default ViajeSQL recuperar(Long id) {
-        return findById(id).orElseThrow();
+        return findById(id).orElseThrow(ViajeNoEncontradoException::new);
     }
 
     default void eliminar(Long id) {

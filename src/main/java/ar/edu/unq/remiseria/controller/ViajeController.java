@@ -2,6 +2,7 @@ package ar.edu.unq.remiseria.controller;
 
 
 import ar.edu.unq.remiseria.controller.dto.ViajeDTO.CrearViajeDTO;
+import ar.edu.unq.remiseria.controller.dto.ViajeDTO.EditarViajeDTO;
 import ar.edu.unq.remiseria.controller.dto.ViajeDTO.RecuperarViajeDTO;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
@@ -37,5 +38,11 @@ public class ViajeController {
             Viaje viaje = viajeService.recuperar(id);
             RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
             return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<RecuperarViajeDTO> editarViaje(@PathVariable Long id, @RequestBody EditarViajeDTO viajeDTO) {
+        Viaje viajeEditado = viajeService.editarViaje(id, viajeDTO.aModelo());
+        return ResponseEntity.ok(RecuperarViajeDTO.desdeModelo(viajeEditado));
     }
 }

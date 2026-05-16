@@ -72,8 +72,8 @@ public class ViajeServiceImpl implements ViajeService {
     }
 
     @Override
-    public Viaje editarViaje(Viaje viaje) {
-        ViajeSQL viajeExistente = viajeDAO.recuperar(viaje.getId());
+    public Viaje editarViaje(Long viajeId, Viaje viaje) {
+        ViajeSQL viajeExistente = viajeDAO.recuperar(viajeId);
 
         if (viajeExistente.getEstadoViaje() == ACEPTADO) {
             throw new ViajeYaIniciadoException();

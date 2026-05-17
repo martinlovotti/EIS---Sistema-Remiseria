@@ -6,9 +6,7 @@ import lombok.*;
 
 @Setter
 @Getter
-@ToString
 @NoArgsConstructor
-@Data
 @Entity(name = "Chofer")
 public class ChoferSQL {
     @Id

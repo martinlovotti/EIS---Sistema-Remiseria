@@ -46,4 +46,12 @@ public class ViajeController {
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
         return ResponseEntity.ok(dto);
     }
+
+    @PatchMapping("/{idViaje}/aceptarViaje/{idChofer}")
+    public ResponseEntity<RecuperarViajeDTO> aceptarViaje(@PathVariable Long idViaje, @PathVariable Long idChofer) {
+        viajeService.aceptarViaje(idViaje, idChofer);
+        Viaje viaje = viajeService.recuperar(idViaje);
+        RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
+        return ResponseEntity.ok(dto);
+    }
 }

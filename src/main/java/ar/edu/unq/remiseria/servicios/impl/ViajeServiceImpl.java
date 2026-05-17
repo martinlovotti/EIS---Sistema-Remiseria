@@ -1,7 +1,9 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerAceptadoException;
 import ar.edu.unq.remiseria.modelo.Chofer;
+import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
@@ -106,6 +108,22 @@ public class ViajeServiceImpl implements ViajeService {
 
     @Override
     public void aceptarViaje(Long viajeId, Long choferId) {
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
+
+        ChoferSQL choferSQL = choferDAO.recuperar(choferId);
+        Chofer chofer = choferMapper.toModel(choferSQL);
+
+        if(viaje.getEstadoViaje() != EstadoViaje.PENDIENTE || chofer.getViajeActual() != null) {
+            throw new ViajeNoPuedeSerAceptadoException("El viaje está solicitado o el chofer ya tiene un viaje asignado");
+        }
+
+        viajeSQL.setChofer(choferSQL);
+        viajeSQL.setEstadoViaje(EstadoViaje.ACEPTADO);
+        ViajeSQL viajeActualizadoSQL = viajeDAO.save(viajeSQL);
+
+        choferSQL.setViajeActual(viajeActualizadoSQL);
+        choferDAO.save(choferSQL);
 
     }
 

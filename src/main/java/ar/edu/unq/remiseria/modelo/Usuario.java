@@ -20,5 +20,6 @@ public class Usuario {
 
     public void solicitarViaje(Viaje viaje) {
         this.viajeActual = viaje;
+        viaje.setCliente(this);
     }
 }

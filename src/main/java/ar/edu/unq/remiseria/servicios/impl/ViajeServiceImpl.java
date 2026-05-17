@@ -44,13 +44,11 @@ public class ViajeServiceImpl implements ViajeService {
             throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
         }
 
-        usuarioModelo.solicitarViaje(viaje);
-
         ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
-
+        viajeSQL.setCliente(usuarioSQL);
         ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
-
-        usuarioDAO.save(usuarioMapper.fromModel(usuarioModelo));
+        usuarioSQL.setViajeActual(viajeGuardado);
+        usuarioDAO.save(usuarioSQL);
 
         return viajeMapper.toModel(viajeGuardado);
     }

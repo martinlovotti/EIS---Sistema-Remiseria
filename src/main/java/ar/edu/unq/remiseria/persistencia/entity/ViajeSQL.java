@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -24,7 +27,7 @@ public class ViajeSQL {
     @Enumerated(EnumType.STRING)
     private EstadoViaje estadoViaje;
 
-    @OneToOne(optional = false)
+    @OneToOne(optional = false, cascade = ALL, fetch = EAGER)
     private UsuarioSQL cliente;
 
     @OneToOne

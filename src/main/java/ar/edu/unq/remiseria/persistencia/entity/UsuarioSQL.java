@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static java.util.Objects.isNull;
 
 @Setter
@@ -21,7 +23,7 @@ public class UsuarioSQL {
     @NotNull(message = "El nombre no puede ser nulo")
     private String nombre;
 
-    @OneToOne
+    @OneToOne(cascade = ALL, fetch = EAGER)
     private ViajeSQL viajeActual;
 
 }

@@ -48,4 +48,16 @@ public class Viaje {
         return estadoViaje == EstadoViaje.PENDIENTE;
     }
 
+    public boolean estaEnCurso(){ return estadoViaje == EstadoViaje.EN_CURSO ;}
+
+    public void finalizarViaje(){
+        if(this.estaEnCurso()){
+            setEstadoViaje(FINALIZADO);
+            cliente.setViajeActual(null);
+            chofer.setViajeActual(null);
+        }else{
+            throw new ViajeNoPuedeCancelarseException();
+        }
+    }
+
 }

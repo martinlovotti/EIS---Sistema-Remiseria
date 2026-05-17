@@ -8,11 +8,11 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {UsuarioMapper.class, ChoferMapper.class})
 public interface ViajeMapper {
 
-    @Mapping(target = "cliente.viajeActual.cliente", ignore = true)
-    @Mapping(target = "chofer.viajeActual.cliente", ignore = true)
+    @Mapping(target = "cliente.viajeActual", ignore = true)
+    @Mapping(target = "chofer.viajeActual", ignore = true)
     Viaje toModel(ViajeSQL viajeSQL);
 
-    @Mapping(target = "cliente.viajeActual.cliente", ignore = true)
-    @Mapping(target = "chofer.viajeActual.cliente", ignore = true)
+    @Mapping(target = "cliente", ignore = true)
+    @Mapping(target = "chofer", ignore = true)
     ViajeSQL fromModel(Viaje viaje);
 }

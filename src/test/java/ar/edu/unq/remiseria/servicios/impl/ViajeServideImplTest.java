@@ -8,6 +8,7 @@ import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,25 +28,38 @@ public class ViajeServideImplTest {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private ChoferService choferService;
+
     private Usuario cliente;
     private Chofer chofer;
     private Viaje viaje;
     private Viaje viajeSinChofer;
-    @Autowired
-    private ChoferService choferService;
+
+    private Viaje viajeEnCurso;
+    private Usuario cliente2;
 
     @BeforeEach
     void setUp() {
         cliente = new Usuario();
         cliente.setNombre("Pepe");
         cliente = usuarioService.crear(cliente);
-        chofer = new Chofer();
+        chofer = new Chofer("Raul", "AAA 111");
+        chofer = choferService.crear(chofer);
         viaje = new Viaje(cliente, chofer);
         viajeSinChofer = new Viaje(cliente, "Quilmes", "Bernal");
         viaje.setOrigen("Quilmes");
         viaje.setDestino("Bernal");
         viaje.setKilometros(6.2);
         viaje.setPrecioFinal(4500.0);
+
+
+        cliente2 = new Usuario();
+        cliente2.setNombre("Jaime");
+        cliente2 = usuarioService.crear(cliente2);
+        viajeEnCurso = new Viaje(cliente2, chofer);
+
+
 
     }
 
@@ -176,8 +190,8 @@ public class ViajeServideImplTest {
         Viaje viajeEditado = viajeService.editarViaje(viajeCreado.getId(), viajeAEditar);
 
         assertEquals(viajeCreado.getEstadoViaje(), viajeEditado.getEstadoViaje());
-        assertEquals(viajeCreado.getCliente().getId(), viajeEditado.getCliente().getId());
-        assertEquals(viajeCreado.getChofer().getId(), viajeEditado.getChofer().getId());
+        assertNull(viajeEditado.getCliente());
+        assertNull(viajeEditado.getChofer());
         assertEquals(viajeCreado.getPrecioFinal(), viajeEditado.getPrecioFinal());
         assertEquals(viajeCreado.getKilometros(), viajeEditado.getKilometros());
 
@@ -213,6 +227,33 @@ public class ViajeServideImplTest {
                 ViajeNoPuedeCancelarseException.class, () ->
                         viajeService.cancelarViaje(viajeEnCurso.getId())
         );
+    }
+
+    @Test
+    public void viajeQueNoEstaEnCursoNoSeFinaliza(){
+        viajeEnCurso.setEstadoViaje(EstadoViaje.PENDIENTE);
+        Viaje viaje = viajeService.crear(viajeEnCurso);
+
+        assertThrows(
+                ViajeNoPuedeCancelarseException.class, () ->
+                        viajeService.finalizarViaje(viaje.getId())
+        );
+
+    }
+
+    @Test
+    public void viajeEnCursoFinaliza(){
+        Viaje viaje = viajeService.crear(viajeEnCurso);
+        viajeService.aceptarViaje(viaje.getId(), chofer.getId());
+        viajeService.iniciarViaje(viaje.getId());
+
+        viajeService.finalizarViaje(viaje.getId());
+
+        Viaje viajeActualizado = viajeService.recuperar(viaje.getId());
+
+        assertEquals(EstadoViaje.FINALIZADO, viajeActualizado.getEstadoViaje());
+        assertEquals(null, viajeActualizado.getCliente().getViajeActual());
+        assertEquals(null, viajeActualizado.getChofer().getViajeActual());
     }
 
 

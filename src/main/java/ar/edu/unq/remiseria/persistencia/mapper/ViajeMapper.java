@@ -12,7 +12,7 @@ public interface ViajeMapper {
     @Mapping(target = "chofer.viajeActual", ignore = true)
     Viaje toModel(ViajeSQL viajeSQL);
 
-    @Mapping(target = "cliente.viajeActual", ignore = true)
-    @Mapping(target = "chofer.viajeActual", ignore = true)
+    @Mapping(target = "cliente", ignore = true)
+    @Mapping(target = "chofer", ignore = true)
     ViajeSQL fromModel(Viaje viaje);
 }

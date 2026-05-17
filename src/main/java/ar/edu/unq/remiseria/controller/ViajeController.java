@@ -38,4 +38,12 @@ public class ViajeController {
             RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
             return ResponseEntity.ok(dto);
     }
+
+    @PostMapping("/{id}/finalizar")
+    public ResponseEntity<RecuperarViajeDTO> finalizarViaje(@PathVariable Long id) {
+        viajeService.finalizarViaje(id);
+        Viaje viaje = viajeService.recuperar(id);
+        RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
+        return ResponseEntity.ok(dto);
+    }
 }

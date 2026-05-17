@@ -1,7 +1,6 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
-import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
-import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.*;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import static ar.edu.unq.remiseria.modelo.EstadoViaje.EN_CURSO;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -98,22 +98,104 @@ public class ViajeServideImplTest {
     }
 
     @Test
-    public void editarViaje() {
+    public void editarViajeSiElViajeEsValidoSeActualizaTest() {
         Viaje viajeCreado = viajeService.crear(viaje);
         viajeCreado.setOrigen("Ezpeleta");
         viajeCreado.setDestino("Berazategui");
         viajeCreado.setKilometros(2.5);
         viajeCreado.setPrecioFinal(3300.0);
 
-        viajeService.editarViaje(viajeCreado);
+        viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
 
         viaje = viajeService.recuperar(viajeCreado.getId());
         assertEquals("Ezpeleta", viaje.getOrigen());
         assertEquals("Berazategui", viaje.getDestino());
-        assertEquals(2.5, viaje.getKilometros());
-        assertEquals(3300.0, viaje.getPrecioFinal());
-
     };
+
+    @Test
+    public void editarViajeSiElOrigenNoEsValidoLanzaExcepcionTest() {
+        Long viajeId = viajeService.crear(viaje).getId();
+
+        Viaje viajeOrigenVacio = new Viaje();
+        viajeOrigenVacio.setOrigen("");
+        viajeOrigenVacio.setDestino("Varela");
+
+        Viaje viajeOrigenNull = new Viaje();
+        viajeOrigenNull.setDestino("Varela");
+
+        assertThrows(OrigenInvalidoException.class, () -> {
+            viajeService.editarViaje(viajeId, viajeOrigenVacio);
+        });
+
+        assertThrows(OrigenInvalidoException.class, () -> {
+            viajeService.editarViaje(viajeId, viajeOrigenNull);
+        });
+    }
+
+    @Test
+    public void editarViajeSiElDestinoNoEsValidoLanzaExcepcionTest() {
+        Long viajeId = viajeService.crear(viaje).getId();
+
+        Viaje viajeDestinoVacio = new Viaje();
+        viajeDestinoVacio.setOrigen("Varela");
+        viajeDestinoVacio.setDestino("");
+
+        Viaje viajeDestinoNull = new Viaje();
+        viajeDestinoNull.setOrigen("Varela");
+
+        assertThrows(DestinoInvalidoException.class, () -> {
+            viajeService.editarViaje(viajeId, viajeDestinoVacio);
+        });
+
+        assertThrows(DestinoInvalidoException.class, () -> {
+            viajeService.editarViaje(viajeId, viajeDestinoNull);
+        });
+    }
+
+    @Test
+    public void editarViajeSiElViajeEstaEnCursoLanzaExcepcion() {
+        // TODO implementar viajeService.aceptarViaje para poder testear este caso
+        Viaje viajeCreado = viajeService.crear(viaje);
+        viajeService.aceptarViaje(viajeCreado.getId(), choferService.crear(chofer).getId());
+
+        assertThrows(ViajeYaIniciadoException.class, () -> {
+            viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
+            throw new RuntimeException("falta implementar viajeService.aceptarViaje");
+        });
+    }
+
+    @Test
+    public void editarViajeSiElViajeNoExisteLanzaExcepcionTest() {
+        Viaje viajeNoExistente = viaje;
+
+        assertThrows(ViajeNoEncontradoException.class, () -> {
+           viajeService.editarViaje(912L, viajeNoExistente);
+        });
+    }
+
+    @Test
+    public void editarViajeSoloModificaOrigenYDestinoTest() {
+        Viaje viajeCreado = viajeService.crear(viaje);
+
+        Viaje viajeAEditar = new Viaje();
+        viajeAEditar.setId(viajeCreado.getId());
+        viajeAEditar.setOrigen("Varela");
+        viajeAEditar.setDestino("Bernal");
+        viajeAEditar.setKilometros(12.0);
+        viajeAEditar.setPrecioFinal(6000.0);
+        viajeAEditar.setCliente(usuarioService.crear(new Usuario()));
+        viajeAEditar.setChofer(choferService.crear(new Chofer()));
+        viajeAEditar.setEstadoViaje(EN_CURSO);
+
+        Viaje viajeEditado = viajeService.editarViaje(viajeCreado.getId(), viajeAEditar);
+
+        assertEquals(viajeCreado.getEstadoViaje(), viajeEditado.getEstadoViaje());
+        assertNull(viajeEditado.getCliente());
+        assertNull(viajeEditado.getChofer());
+        assertEquals(viajeCreado.getPrecioFinal(), viajeEditado.getPrecioFinal());
+        assertEquals(viajeCreado.getKilometros(), viajeEditado.getKilometros());
+
+    }
 
     @Test
     public void unViajeEnEstadoPendienteSeCancelaTest() {
@@ -161,8 +243,9 @@ public class ViajeServideImplTest {
 
     @Test
     public void viajeEnCursoFinaliza(){
-        viajeEnCurso.setEstadoViaje(EstadoViaje.EN_CURSO);
         Viaje viaje = viajeService.crear(viajeEnCurso);
+        viajeService.aceptarViaje(viaje.getId(), chofer.getId());
+        viajeService.iniciarViaje(viaje.getId());
 
         viajeService.finalizarViaje(viaje.getId());
 

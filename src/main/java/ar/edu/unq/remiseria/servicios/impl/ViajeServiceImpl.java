@@ -1,21 +1,26 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
+import ar.edu.unq.remiseria.exception.DestinoInvalidoException;
+import ar.edu.unq.remiseria.exception.OrigenInvalidoException;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeYaIniciadoException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
 import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
-import ar.edu.unq.remiseria.persistencia.entity.ChoferSQL;
 import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
 import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import ar.edu.unq.remiseria.persistencia.mapper.ChoferMapper;
 import ar.edu.unq.remiseria.persistencia.mapper.UsuarioMapper;
 import ar.edu.unq.remiseria.persistencia.mapper.ViajeMapper;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import static ar.edu.unq.remiseria.modelo.EstadoViaje.ACEPTADO;
+import static java.util.Objects.isNull;
 
 @Service
 @Transactional
@@ -47,13 +52,11 @@ public class ViajeServiceImpl implements ViajeService {
             throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
         }
 
-        usuarioModelo.solicitarViaje(viaje);
-
         ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
-
+        viajeSQL.setCliente(usuarioSQL);
         ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
-
-        usuarioDAO.save(usuarioMapper.fromModel(usuarioModelo));
+        usuarioSQL.setViajeActual(viajeGuardado);
+        usuarioDAO.save(usuarioSQL);
 
         return viajeMapper.toModel(viajeGuardado);
     }
@@ -96,12 +99,28 @@ public class ViajeServiceImpl implements ViajeService {
     }
 
     @Override
-    public void editarViaje(Viaje viaje) {
-        ViajeSQL viajeExistente = viajeDAO.recuperar(viaje.getId());
+    public Viaje editarViaje(Long viajeId, Viaje viaje) {
+        ViajeSQL viajeExistente = viajeDAO.recuperar(viajeId);
 
-        // aca habria que agregar una logica para chequear que solo se esten modificando campos permitidos
+        if (viajeExistente.getEstadoViaje() == ACEPTADO) {
+            throw new ViajeYaIniciadoException();
+        }
 
-        viajeDAO.save(viajeMapper.fromModel(viaje));
+        if (isNull(viaje.getDestino()) || viaje.getDestino().isBlank()) {
+            throw new DestinoInvalidoException();
+        }
+
+        if (isNull(viaje.getOrigen()) || viaje.getOrigen().isBlank()) {
+            throw new OrigenInvalidoException();
+        }
+
+        // Solo se modifican las direcciones de origen y destino, los kilómetros y el precio del viaje se calcularían en
+        // base a estos datos que, en un futuro, se volverían mas complejos que un String (Spoiler: no va a pasar)
+
+        viajeExistente.setOrigen(viaje.getOrigen());
+        viajeExistente.setDestino(viaje.getDestino());
+
+        return viajeMapper.toModel(viajeDAO.save(viajeExistente));
     }
 
     @Override

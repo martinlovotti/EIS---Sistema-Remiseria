@@ -10,7 +10,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ViajeNoPuedeCancelarseException.class)
     public ResponseEntity<String> handleViajeNoPuedeCancelarse(ViajeNoPuedeCancelarseException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(UsuarioConViajeSolicitadoException.class)
@@ -18,5 +18,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ex.getMessage());
+    }
+
+    @ExceptionHandler(NoHayChoferesException.class)
+    public ResponseEntity<String> handleNoHayChoferes(NoHayChoferesException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }

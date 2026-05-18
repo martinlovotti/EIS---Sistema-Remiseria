@@ -1,7 +1,9 @@
 package ar.edu.unq.remiseria.exception;
 
-public class ViajeNoPuedeCancelarseException extends RuntimeException {
-    public ViajeNoPuedeCancelarseException() {
-        super("El viaje no puede cancelarse porque ya fue iniciado");
+import ar.edu.unq.remiseria.modelo.EstadoViaje;
+
+public class ViajeNoPuedeCancelarseException extends DomainException {
+    public ViajeNoPuedeCancelarseException(EstadoViaje estadoViaje) {
+        super("El viaje no puede cancelarse porque está %s".formatted(estadoViaje));
     }
 }

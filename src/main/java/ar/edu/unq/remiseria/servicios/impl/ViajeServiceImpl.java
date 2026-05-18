@@ -70,7 +70,7 @@ public class ViajeServiceImpl implements ViajeService {
         Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
 
         if (usuarioModelo.tieneViajeSolicitado()) {
-            throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
+            throw new UsuarioConViajeSolicitadoException();
         }
 
         //guardar el viaje (sin la referencia circular del usuario)
@@ -135,7 +135,7 @@ public class ViajeServiceImpl implements ViajeService {
         Chofer chofer = choferMapper.toModel(choferSQL);
 
         if(viaje.getEstadoViaje() != EstadoViaje.PENDIENTE || chofer.getViajeActual() != null) {
-            throw new ViajeNoPuedeSerAceptadoException("El viaje está solicitado o el chofer ya tiene un viaje asignado");
+            throw new ViajeNoPuedeSerAceptadoException();
         }
 
         viajeSQL.setChofer(choferSQL);

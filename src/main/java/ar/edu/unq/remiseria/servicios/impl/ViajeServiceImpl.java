@@ -3,13 +3,16 @@ package ar.edu.unq.remiseria.servicios.impl;
 import ar.edu.unq.remiseria.exception.DestinoInvalidoException;
 import ar.edu.unq.remiseria.exception.OrigenInvalidoException;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerAceptadoException;
 import ar.edu.unq.remiseria.exception.ViajeYaIniciadoException;
 import ar.edu.unq.remiseria.modelo.Chofer;
+import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
 import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
+import ar.edu.unq.remiseria.persistencia.entity.ChoferSQL;
 import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
 import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import ar.edu.unq.remiseria.persistencia.mapper.ChoferMapper;
@@ -125,12 +128,31 @@ public class ViajeServiceImpl implements ViajeService {
 
     @Override
     public void aceptarViaje(Long viajeId, Long choferId) {
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
+
+        ChoferSQL choferSQL = choferDAO.recuperar(choferId);
+        Chofer chofer = choferMapper.toModel(choferSQL);
+
+        if(viaje.getEstadoViaje() != EstadoViaje.PENDIENTE || chofer.getViajeActual() != null) {
+            throw new ViajeNoPuedeSerAceptadoException("El viaje está solicitado o el chofer ya tiene un viaje asignado");
+        }
+
+        viajeSQL.setChofer(choferSQL);
+        viajeSQL.setEstadoViaje(EstadoViaje.ACEPTADO);
+        ViajeSQL viajeActualizadoSQL = viajeDAO.save(viajeSQL);
+
+        choferSQL.setViajeActual(viajeActualizadoSQL);
+        choferDAO.save(choferSQL);
 
     }
 
     @Override
     public void iniciarViaje(Long viajeId) {
-
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
+        viaje.inicializarViaje();
+        viajeDAO.save(viajeMapper.fromModel(viaje));
     }
 
     @Override

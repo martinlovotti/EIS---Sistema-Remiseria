@@ -1,6 +1,10 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
+import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerAceptadoException;
 import ar.edu.unq.remiseria.exception.*;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -8,7 +12,6 @@ import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,7 +178,8 @@ public class ViajeServideImplTest {
 
     @Test
     public void editarViajeSoloModificaOrigenYDestinoTest() {
-        Viaje viajeCreado = viajeService.crear(viaje);
+        viajeSinChofer.setCliente(cliente);
+        Viaje viajeCreado = viajeService.crear(viajeSinChofer);
 
         Viaje viajeAEditar = new Viaje();
         viajeAEditar.setId(viajeCreado.getId());
@@ -190,7 +194,7 @@ public class ViajeServideImplTest {
         Viaje viajeEditado = viajeService.editarViaje(viajeCreado.getId(), viajeAEditar);
 
         assertEquals(viajeCreado.getEstadoViaje(), viajeEditado.getEstadoViaje());
-        assertNull(viajeEditado.getCliente());
+        assertEquals(viajeEditado.getCliente().getId(), cliente.getId());
         assertNull(viajeEditado.getChofer());
         assertEquals(viajeCreado.getPrecioFinal(), viajeEditado.getPrecioFinal());
         assertEquals(viajeCreado.getKilometros(), viajeEditado.getKilometros());
@@ -254,6 +258,77 @@ public class ViajeServideImplTest {
         assertEquals(EstadoViaje.FINALIZADO, viajeActualizado.getEstadoViaje());
         assertEquals(null, viajeActualizado.getCliente().getViajeActual());
         assertEquals(null, viajeActualizado.getChofer().getViajeActual());
+    }
+
+    @Test
+    public void viajeAceptadoInicia(){
+        Viaje viajeAceptado = viajeService.crear(viaje);
+        viajeService.aceptarViaje(viajeAceptado.getId(), chofer.getId());
+
+        viajeService.iniciarViaje(viajeAceptado.getId());
+
+        Viaje viajeIniciado = viajeService.recuperar(viajeAceptado.getId());
+
+        assertEquals(EstadoViaje.EN_CURSO, viajeIniciado.getEstadoViaje());
+    }
+
+    @Test
+    public void viajeNoAceptadoInicia(){
+        viaje.setEstadoViaje(EstadoViaje.PENDIENTE);
+        Viaje viajeP = viajeService.crear(viaje);
+
+        assertThrows(
+                ViajeNoPuedeInicializarseException.class, () ->
+                        viajeService.iniciarViaje(viajeP.getId())
+        );
+
+    }
+    @Test
+    public void viajeSolicitadoEsAceptadoSeLeAsignaUnChoferTest() {
+        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+
+        viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
+
+        Viaje viajeRecuperado = viajeService.recuperar(viajeSinChoferCreado.getId());
+        Chofer choferRecuperado = choferService.recuperar(chofer.getId());
+
+        assertEquals(viajeRecuperado.getChofer().getId(), choferRecuperado.getId());
+    }
+
+    @Test
+    public void cuandoUnViajeEsAceptadoSuEstadoCambiaAAceptadoTest() {
+        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+
+        viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
+
+        Viaje viajeRecuperado = viajeService.recuperar(viajeSinChoferCreado.getId());
+
+        assertEquals(EstadoViaje.ACEPTADO, viajeRecuperado.getEstadoViaje());
+    }
+
+    @Test
+    public void aceptarViajeParaUnViajeQueYaFueAceptadoLanzaExcepcionTest() {
+        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+
+        viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
+
+        Chofer chofer2 =  choferService.crear(new Chofer("Nova", "QQQ 666"));
+
+        Viaje viajeRecuperado = viajeService.recuperar(viajeSinChoferCreado.getId());
+
+        assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(viajeRecuperado.getId(), chofer2.getId()));
+    }
+
+    @Test
+    public void aceptarViajeParaUnChoferQueYaTieneUnViajeAsignadoLanzaExcepcionTest() {
+        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+
+        viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
+
+        Viaje otroViajeSinChoferCreado = viajeService.crear(new Viaje(cliente2, "Bernal", "Avellaneda"));
+
+
+        assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(otroViajeSinChoferCreado.getId(), chofer.getId()));
     }
 
 

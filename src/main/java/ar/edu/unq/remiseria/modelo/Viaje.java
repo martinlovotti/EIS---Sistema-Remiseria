@@ -1,6 +1,7 @@
 package ar.edu.unq.remiseria.modelo;
 
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import lombok.*;
 
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.*;
@@ -57,6 +58,16 @@ public class Viaje {
             chofer.setViajeActual(null);
         }else{
             throw new ViajeNoPuedeCancelarseException();
+        }
+    }
+
+    public boolean estaAceptado(){ return estadoViaje == EstadoViaje.ACEPTADO ;}
+
+    public void inicializarViaje() {
+        if (this.estaAceptado()){
+            setEstadoViaje(EN_CURSO);
+        }else{
+            throw new ViajeNoPuedeInicializarseException();
         }
     }
 

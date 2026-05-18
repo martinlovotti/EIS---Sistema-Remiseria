@@ -2,7 +2,7 @@ package ar.edu.unq.remiseria.modelo;
 
 import lombok.*;
 
-@Data
+
 @Setter @Getter @NoArgsConstructor @AllArgsConstructor
 public class Chofer {
     private Long id;

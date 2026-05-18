@@ -24,4 +24,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleNoHayChoferes(NoHayChoferesException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+    
+    @ExceptionHandler(ViajeNoPuedeSerAceptadoException.class)
+    public ResponseEntity<String> handleViajeNoPuedeSerAceptado(ViajeNoPuedeSerAceptadoException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

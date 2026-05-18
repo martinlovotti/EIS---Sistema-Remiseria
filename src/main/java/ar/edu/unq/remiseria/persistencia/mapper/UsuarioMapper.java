@@ -9,8 +9,10 @@ import org.mapstruct.Mapping;
 public interface UsuarioMapper {
 
     @Mapping(target = "viajeActual.cliente", ignore = true)
+    @Mapping(target = "viajeActual.chofer.viajeActual", ignore = true)
     Usuario toModel(UsuarioSQL usuarioSQL);
 
     @Mapping(target = "viajeActual.cliente", ignore = true)
+    @Mapping(target = "viajeActual.chofer.viajeActual", ignore = true)
     UsuarioSQL fromModel(Usuario usuario);
 }

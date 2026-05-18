@@ -46,31 +46,30 @@ public class ViajeServiceImpl implements ViajeService {
     }
 
     /**
+     * @Override public Viaje crear(Viaje viaje) {
+     * UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());
+     * Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
+     * <p>
+     * if (usuarioModelo.tieneViajeSolicitado()) {
+     * throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
+     * }
+     * <p>
+     * ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
+     * viajeSQL.setCliente(usuarioSQL);
+     * ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
+     * usuarioSQL.setViajeActual(viajeGuardado);
+     * usuarioDAO.save(usuarioSQL);
+     * <p>
+     * return viajeMapper.toModel(viajeGuardado);
+     * }
+     */
     @Override
     public Viaje crear(Viaje viaje) {
         UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());
         Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
 
         if (usuarioModelo.tieneViajeSolicitado()) {
-            throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
-        }
-
-        ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
-        viajeSQL.setCliente(usuarioSQL);
-        ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
-        usuarioSQL.setViajeActual(viajeGuardado);
-        usuarioDAO.save(usuarioSQL);
-
-        return viajeMapper.toModel(viajeGuardado);
-    }
-    */
-    @Override
-    public Viaje crear(Viaje viaje) {
-        UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());
-        Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
-
-        if (usuarioModelo.tieneViajeSolicitado()) {
-            throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
+            throw new UsuarioConViajeSolicitadoException();
         }
 
         //guardar el viaje (sin la referencia circular del usuario)
@@ -92,7 +91,10 @@ public class ViajeServiceImpl implements ViajeService {
 
         viaje.cancelar();
 
-        viajeDAO.save(viajeMapper.fromModel(viaje));
+        UsuarioSQL usuarioSQL = usuarioDAO.save(usuarioMapper.fromModel(viaje.getCliente()));
+        viajeSQL = viajeMapper.fromModel(viaje);
+        viajeSQL.setCliente(usuarioSQL);
+        viajeDAO.save(viajeSQL);
     }
 
     @Override
@@ -134,16 +136,11 @@ public class ViajeServiceImpl implements ViajeService {
         ChoferSQL choferSQL = choferDAO.recuperar(choferId);
         Chofer chofer = choferMapper.toModel(choferSQL);
 
-        if(viaje.getEstadoViaje() != EstadoViaje.PENDIENTE || chofer.getViajeActual() != null) {
-            throw new ViajeNoPuedeSerAceptadoException("El viaje está solicitado o el chofer ya tiene un viaje asignado");
-        }
+        chofer.aceptarViaje(viaje);
 
-        viajeSQL.setChofer(choferSQL);
-        viajeSQL.setEstadoViaje(EstadoViaje.ACEPTADO);
-        ViajeSQL viajeActualizadoSQL = viajeDAO.save(viajeSQL);
+        viajeDAO.save(viajeMapper.fromModel(viaje));
 
-        choferSQL.setViajeActual(viajeActualizadoSQL);
-        choferDAO.save(choferSQL);
+        choferDAO.save(choferMapper.fromModel(chofer));
 
     }
 
@@ -152,7 +149,9 @@ public class ViajeServiceImpl implements ViajeService {
         ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
         Viaje viaje = viajeMapper.toModel(viajeSQL);
         viaje.inicializarViaje();
-        viajeDAO.save(viajeMapper.fromModel(viaje));
+        viajeSQL = viajeMapper.fromModel(viaje);
+        viajeSQL.setCliente(usuarioDAO.recuperar(viajeSQL.getCliente().getId()));
+        viajeDAO.save(viajeSQL);
     }
 
     @Override
@@ -164,14 +163,15 @@ public class ViajeServiceImpl implements ViajeService {
         //Si lo puede finalizar el viajeActual de chofer y user queda null y
         // continua con las lineas de debajo donde guarda las entidades actualizadas por el metodo
 
-        Chofer chofer = viaje.getChofer();
-        Usuario usuario = viaje.getCliente();
+        ChoferSQL choferSQL = choferMapper.fromModel(viaje.getChofer());
+        UsuarioSQL usuarioSQL = usuarioMapper.fromModel(viaje.getCliente());
+        viajeSQL = viajeMapper.fromModel(viaje);
+        viajeSQL.setChofer(choferDAO.save(choferSQL));
+        viajeSQL.setCliente(usuarioDAO.save(usuarioSQL));
         //Se podrian no usar estas 2 variables y pasarla directamente al dao con el get pero para
         //que quede mas legible lo que guarda cada dao
 
-        viajeDAO.save(viajeMapper.fromModel(viaje));
-        usuarioDAO.save(usuarioMapper.fromModel(usuario));
-        choferDAO.save(choferMapper.fromModel(chofer));
+        viajeDAO.save(viajeSQL);
 
     }
 }

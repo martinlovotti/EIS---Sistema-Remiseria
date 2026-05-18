@@ -163,7 +163,6 @@ public class ViajeServideImplTest {
 
         assertThrows(ViajeYaIniciadoException.class, () -> {
             viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
-            throw new RuntimeException("falta implementar viajeService.aceptarViaje");
         });
     }
 
@@ -239,7 +238,7 @@ public class ViajeServideImplTest {
         Viaje viaje = viajeService.crear(viajeEnCurso);
 
         assertThrows(
-                ViajeNoPuedeCancelarseException.class, () ->
+                ViajeNoPuedeFinalizarseException.class, () ->
                         viajeService.finalizarViaje(viaje.getId())
         );
 

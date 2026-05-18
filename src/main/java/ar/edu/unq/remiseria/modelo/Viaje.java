@@ -1,6 +1,7 @@
 package ar.edu.unq.remiseria.modelo;
 
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeFinalizarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import lombok.*;
 
@@ -39,8 +40,10 @@ public class Viaje {
 
     public void cancelar() {
         if (!(estadoViaje == PENDIENTE || estadoViaje == ACEPTADO)) {
-            throw new ViajeNoPuedeCancelarseException();
+            throw new ViajeNoPuedeCancelarseException(estadoViaje);
         }
+
+        cliente.setViajeActual(null);
 
         this.setEstadoViaje(CANCELADO);
     }
@@ -57,7 +60,7 @@ public class Viaje {
             cliente.setViajeActual(null);
             chofer.setViajeActual(null);
         }else{
-            throw new ViajeNoPuedeCancelarseException();
+            throw new ViajeNoPuedeFinalizarseException();
         }
     }
 

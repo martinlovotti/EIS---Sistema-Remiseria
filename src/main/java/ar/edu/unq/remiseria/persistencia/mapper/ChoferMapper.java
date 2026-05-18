@@ -9,8 +9,10 @@ import org.mapstruct.Mapping;
 public interface ChoferMapper {
 
     @Mapping(target = "viajeActual.chofer", ignore = true)
+    @Mapping(target = "viajeActual.cliente.viajeActual", ignore = true)
     Chofer toModel(ChoferSQL choferSQL);
 
     @Mapping(target = "viajeActual.chofer", ignore = true)
+    @Mapping(target = "viajeActual.cliente.viajeActual", ignore = true)
     ChoferSQL fromModel(Chofer chofer);
 }

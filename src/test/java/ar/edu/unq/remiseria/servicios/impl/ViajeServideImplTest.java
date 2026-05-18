@@ -239,7 +239,7 @@ public class ViajeServideImplTest {
         Viaje viaje = viajeService.crear(viajeEnCurso);
 
         assertThrows(
-                ViajeNoPuedeCancelarseException.class, () ->
+                ViajeNoPuedeFinalizarseException.class, () ->
                         viajeService.finalizarViaje(viaje.getId())
         );
 

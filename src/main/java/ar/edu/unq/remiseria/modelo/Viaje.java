@@ -43,6 +43,8 @@ public class Viaje {
             throw new ViajeNoPuedeCancelarseException(estadoViaje);
         }
 
+        cliente.setViajeActual(null);
+
         this.setEstadoViaje(CANCELADO);
     }
     

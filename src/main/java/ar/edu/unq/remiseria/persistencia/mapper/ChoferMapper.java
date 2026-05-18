@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ChoferMapper {
 
-    @Mapping(target = "viajeActual.chofer", ignore = true)
+    @Mapping(target = "viajeActual", ignore = true)
     Chofer toModel(ChoferSQL choferSQL);
 
     @Mapping(target = "viajeActual.chofer", ignore = true)

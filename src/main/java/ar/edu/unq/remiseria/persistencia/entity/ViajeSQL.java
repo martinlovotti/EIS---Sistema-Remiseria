@@ -27,7 +27,7 @@ public class ViajeSQL {
     @Enumerated(EnumType.STRING)
     private EstadoViaje estadoViaje;
 
-    @OneToOne(optional = false, cascade = ALL, fetch = EAGER)
+    @OneToOne
     private UsuarioSQL cliente;
 
     @OneToOne

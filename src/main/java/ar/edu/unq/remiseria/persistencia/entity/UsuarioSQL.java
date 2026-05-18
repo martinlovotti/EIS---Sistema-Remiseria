@@ -23,7 +23,7 @@ public class UsuarioSQL {
     @NotNull(message = "El nombre no puede ser nulo")
     private String nombre;
 
-    @OneToOne(cascade = ALL, fetch = EAGER)
+    @OneToOne
     private ViajeSQL viajeActual;
 
 }

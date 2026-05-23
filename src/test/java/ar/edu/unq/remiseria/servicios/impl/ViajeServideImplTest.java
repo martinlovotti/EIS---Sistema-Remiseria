@@ -9,9 +9,13 @@ import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
+import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
+import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
+import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +45,16 @@ public class ViajeServideImplTest {
 
     private Viaje viajeEnCurso;
     private Usuario cliente2;
+    @Autowired
+    private ViajeDAO viajeDAO;
+    @Autowired
+    private UsuarioDAO usuarioDAO;
+    @Autowired
+    private ChoferDAO choferDAO;
 
     @BeforeEach
     void setUp() {
-        cliente = new Usuario();
-        cliente.setNombre("Pepe");
+        cliente = new Usuario("Pepe");
         cliente = usuarioService.crear(cliente);
         chofer = new Chofer("Raul", "AAA 111");
         chofer = choferService.crear(chofer);
@@ -57,13 +66,9 @@ public class ViajeServideImplTest {
         viaje.setPrecioFinal(4500.0);
 
 
-        cliente2 = new Usuario();
-        cliente2.setNombre("Jaime");
+        cliente2 = new Usuario("Jaime");
         cliente2 = usuarioService.crear(cliente2);
         viajeEnCurso = new Viaje(cliente2, chofer);
-
-
-
     }
 
     @Test
@@ -93,7 +98,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void crearViajeParaUnClienteQueYaTieneViajeSolicitadoLanzaExcepcionTest() {
-        viajeService.crear(viajeSinChofer);
+        viajeService.crear(viaje);
         Usuario clienteRecuperado = usuarioService.recuperar(cliente.getId());
         Viaje viajeSolicitado = new Viaje(clienteRecuperado, "Ezpeleta", "Berazategui");
 
@@ -186,7 +191,7 @@ public class ViajeServideImplTest {
         viajeAEditar.setDestino("Bernal");
         viajeAEditar.setKilometros(12.0);
         viajeAEditar.setPrecioFinal(6000.0);
-        viajeAEditar.setCliente(usuarioService.crear(new Usuario()));
+        viajeAEditar.setCliente(usuarioService.crear(new Usuario("Freitas")));
         viajeAEditar.setChofer(choferService.crear(new Chofer()));
         viajeAEditar.setEstadoViaje(EN_CURSO);
 
@@ -255,8 +260,8 @@ public class ViajeServideImplTest {
         Viaje viajeActualizado = viajeService.recuperar(viaje.getId());
 
         assertEquals(EstadoViaje.FINALIZADO, viajeActualizado.getEstadoViaje());
-        assertEquals(null, viajeActualizado.getCliente().getViajeActual());
-        assertEquals(null, viajeActualizado.getChofer().getViajeActual());
+        assertEquals(null, viajeActualizado.getCliente().getViajes());
+        assertEquals(null, viajeActualizado.getChofer().getViajes());
     }
 
     @Test
@@ -331,4 +336,10 @@ public class ViajeServideImplTest {
     }
 
 
+    @AfterEach
+    void tearDown() {
+        viajeDAO.deleteAll();
+        usuarioDAO.deleteAll();
+        choferDAO.deleteAll();
+    }
 }

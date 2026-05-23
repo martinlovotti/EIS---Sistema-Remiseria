@@ -1,16 +1,16 @@
 package ar.edu.unq.remiseria.persistencia.dao;
 
 import ar.edu.unq.remiseria.exception.ChoferNoEncontradoException;
-import ar.edu.unq.remiseria.persistencia.entity.ChoferSQL;
+import ar.edu.unq.remiseria.modelo.Chofer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
 
 @Repository
-public interface ChoferDAO extends JpaRepository<ChoferSQL, Long> {
+public interface ChoferDAO extends JpaRepository<Chofer, Long> {
 
-    default ChoferSQL recuperar(Long id) {
+    default Chofer recuperar(Long id) {
         return findById(id).orElseThrow(ChoferNoEncontradoException::new);
     }
 
@@ -21,7 +21,7 @@ public interface ChoferDAO extends JpaRepository<ChoferSQL, Long> {
         deleteById(id);
     }
 
-    default List<ChoferSQL> recuperarTodos() {
+    default List<Chofer> recuperarTodos() {
         return findAll();
     }
 }

@@ -3,14 +3,19 @@ package ar.edu.unq.remiseria.modelo;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeFinalizarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
+import jakarta.persistence.*;
 import lombok.*;
 
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.*;
+import static jakarta.persistence.CascadeType.ALL;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity(name = "Viaje")
 public class Viaje {
+    @Id
+    @GeneratedValue
     private Long id;
 
     private String origen;
@@ -19,14 +24,17 @@ public class Viaje {
     private Double precioFinal;
     private Double kilometros;
 
+    @Enumerated(EnumType.STRING)
     private EstadoViaje estadoViaje;
 
+    @ManyToOne(optional = false, cascade = ALL)
     private Usuario cliente;
+
+    @ManyToOne(cascade = ALL)
     private Chofer chofer;
 
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
-        this.cliente.solicitarViaje(this);
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
     }
@@ -43,35 +51,42 @@ public class Viaje {
             throw new ViajeNoPuedeCancelarseException(estadoViaje);
         }
 
-        cliente.setViajeActual(null);
+        cliente.setViajes(null);
 
         this.setEstadoViaje(CANCELADO);
     }
-    
+
     public boolean estaSolicitado() {
         return estadoViaje == EstadoViaje.PENDIENTE;
     }
 
-    public boolean estaEnCurso(){ return estadoViaje == EstadoViaje.EN_CURSO ;}
+    public boolean estaEnCurso() {
+        return estadoViaje == EstadoViaje.EN_CURSO;
+    }
 
-    public void finalizarViaje(){
-        if(this.estaEnCurso()){
+    public void finalizarViaje() {
+        if (this.estaEnCurso()) {
             setEstadoViaje(FINALIZADO);
-            cliente.setViajeActual(null);
-            chofer.setViajeActual(null);
-        }else{
+            cliente.setViajes(null);
+            chofer.setViajes(null);
+        } else {
             throw new ViajeNoPuedeFinalizarseException();
         }
     }
 
-    public boolean estaAceptado(){ return estadoViaje == EstadoViaje.ACEPTADO ;}
+    public boolean estaAceptado() {
+        return estadoViaje == EstadoViaje.ACEPTADO;
+    }
 
     public void inicializarViaje() {
-        if (this.estaAceptado()){
+        if (this.estaAceptado()) {
             setEstadoViaje(EN_CURSO);
-        }else{
+        } else {
             throw new ViajeNoPuedeInicializarseException();
         }
     }
 
+    public boolean estaFinalizado() {
+        return estadoViaje == FINALIZADO;
+    }
 }

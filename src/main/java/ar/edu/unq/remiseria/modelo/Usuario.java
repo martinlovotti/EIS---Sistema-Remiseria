@@ -1,25 +1,42 @@
 package ar.edu.unq.remiseria.modelo;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 
-@Setter @Getter @NoArgsConstructor @AllArgsConstructor
+import static jakarta.persistence.CascadeType.ALL;
+
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity(name = "Usuario")
 public class Usuario {
+    @Id
+    @GeneratedValue
     private Long id;
     private String nombre;
-    private Viaje viajeActual;
 
-    public Usuario(String nombre){
+    @OneToMany(orphanRemoval = true, cascade = ALL, mappedBy = "cliente")
+    private List<Viaje> viajes;
+
+    public Usuario(String nombre) {
         this.nombre = nombre;
-        this.viajeActual = null;
+        this.viajes = new ArrayList<>();
     }
 
-    public boolean tieneViajeSolicitado(){
-        return viajeActual != null;
+    public boolean tieneViajeSolicitado() {
+        return !viajes.isEmpty() && !viajes.getFirst().estaFinalizado();
     }
 
     public void solicitarViaje(Viaje viaje) {
-        this.viajeActual = viaje;
+        this.viajes.addFirst(viaje);
         viaje.setCliente(this);
     }
 }

@@ -1,8 +1,8 @@
 package ar.edu.unq.remiseria.persistencia.dao;
 
 import ar.edu.unq.remiseria.exception.ViajeNoEncontradoException;
-import ar.edu.unq.remiseria.persistencia.entity.ChoferSQL;
-import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
+import ar.edu.unq.remiseria.modelo.Chofer;
+import ar.edu.unq.remiseria.modelo.Viaje;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ViajeDAO extends JpaRepository<ViajeSQL, Long> {
+public interface ViajeDAO extends JpaRepository<Viaje, Long> {
 
-    default ViajeSQL recuperar(Long id) {
+    default Viaje recuperar(Long id) {
         return findById(id).orElseThrow(ViajeNoEncontradoException::new);
     }
 
@@ -21,14 +21,14 @@ public interface ViajeDAO extends JpaRepository<ViajeSQL, Long> {
         deleteById(id);
     }
 
-    default List<ViajeSQL> recuperarTodos() {
+    default List<Viaje> recuperarTodos() {
         return findAll();
     }
 
-    default void editar(ViajeSQL viaje) {
+    default void editar(Viaje viaje) {
         save(viaje);
     }
 
     @Query("SELECT v.chofer FROM Viaje v GROUP BY v.chofer ORDER BY COUNT(v) DESC LIMIT 1")
-    Optional<ChoferSQL> recuperarChoferConMasViajes();
+    Optional<Chofer> recuperarChoferConMasViajes();
 }

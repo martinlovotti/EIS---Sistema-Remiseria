@@ -11,6 +11,7 @@ import ar.edu.unq.remiseria.servicios.interfaces.AdminService;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ public class AdminServiceImplTest {
 
     @Autowired
     private UsuarioDAO usuarioDAO;
+
 
     private Chofer juan;
     private Chofer pedro;

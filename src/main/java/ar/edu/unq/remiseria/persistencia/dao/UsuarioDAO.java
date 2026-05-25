@@ -2,9 +2,13 @@ package ar.edu.unq.remiseria.persistencia.dao;
 
 import ar.edu.unq.remiseria.exception.UsuarioNoEncontradoException;
 import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
+import ar.edu.unq.remiseria.modelo.EstadoViaje;
+import ar.edu.unq.remiseria.modelo.Viaje;
+import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
@@ -29,4 +33,7 @@ public interface UsuarioDAO extends JpaRepository<UsuarioSQL, Long>{
     @Modifying
     @Query("UPDATE Usuario u SET u.viajeActual = null")
     void desvincularViajes();
+
+    @Query("SELECT v FROM Viaje v WHERE v.cliente.id = :usuarioId AND v.estadoViaje = :estado")
+    List<ViajeSQL> findViajesByClienteAndEstado(@Param("usuarioId") Long usuarioId, @Param("estado") EstadoViaje estado);
 }

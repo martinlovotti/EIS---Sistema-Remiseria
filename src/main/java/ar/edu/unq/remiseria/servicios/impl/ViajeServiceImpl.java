@@ -45,24 +45,6 @@ public class ViajeServiceImpl implements ViajeService {
         this.choferMapper = choferMapper;
     }
 
-    /**
-     * @Override public Viaje crear(Viaje viaje) {
-     * UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());
-     * Usuario usuarioModelo = usuarioMapper.toModel(usuarioSQL);
-     * <p>
-     * if (usuarioModelo.tieneViajeSolicitado()) {
-     * throw new UsuarioConViajeSolicitadoException("El cliente ya tiene un viaje solicitado");
-     * }
-     * <p>
-     * ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
-     * viajeSQL.setCliente(usuarioSQL);
-     * ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
-     * usuarioSQL.setViajeActual(viajeGuardado);
-     * usuarioDAO.save(usuarioSQL);
-     * <p>
-     * return viajeMapper.toModel(viajeGuardado);
-     * }
-     */
     @Override
     public Viaje crear(Viaje viaje) {
         UsuarioSQL usuarioSQL = usuarioDAO.recuperar(viaje.getCliente().getId());

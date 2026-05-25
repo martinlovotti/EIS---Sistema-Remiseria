@@ -24,13 +24,6 @@ public class Viaje {
     private Usuario cliente;
     private Chofer chofer;
 
-    public Viaje(Usuario cliente, Chofer chofer) {
-        this.cliente = cliente;
-        this.cliente.solicitarViaje(this);
-        this.chofer = chofer;
-        this.estadoViaje = PENDIENTE;
-    }
-
     public Viaje(Usuario cliente, String origen, String destino) {
         this.cliente = cliente;
         this.origen = origen;

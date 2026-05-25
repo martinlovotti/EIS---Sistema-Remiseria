@@ -4,13 +4,11 @@ import ar.edu.unq.remiseria.exception.NoHayChoferesException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
-import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
-import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
-import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
 import ar.edu.unq.remiseria.servicios.interfaces.AdminService;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import ar.edu.unq.remiseria.testService.TestService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +34,7 @@ public class AdminServiceImplTest {
     private UsuarioService usuarioService;
 
     @Autowired
-    private ViajeDAO viajeDAO;
-
-    @Autowired
-    private ChoferDAO choferDAO;
-
-    @Autowired
-    private UsuarioDAO usuarioDAO;
+    private TestService testService;
 
     private Chofer juan;
     private Chofer pedro;
@@ -52,34 +44,45 @@ public class AdminServiceImplTest {
 
     @BeforeEach
     void prepare() {
-        juan = choferService.crear(new Chofer("juan", "abc123"));
-        pedro = choferService.crear(new Chofer("pedro", "xyz789"));
-        cliente1 = usuarioService.crear(new Usuario("cliente1"));
-        cliente2 = usuarioService.crear(new Usuario("cliente2"));
-        cliente3 = usuarioService.crear(new Usuario("cliente3"));
+        juan = crearChofer("juan", "ABC123");
+        pedro = crearChofer("pedro", "XYZ789");
+        cliente1 = crearUsuario("cliente1");
+        cliente2 = crearUsuario("cliente2");
+        cliente3 = crearUsuario("cliente3");
     }
 
-    @AfterEach
-    void cleanup() {
-        viajeDAO.deleteAll();
-        choferDAO.deleteAll();
-        usuarioDAO.deleteAll();
+    private Chofer crearChofer(String nombre, String patente) {
+        return choferService.crear(new Chofer(nombre, patente));
     }
 
-    //@Test
+    private Usuario crearUsuario(String nombre) {
+        return usuarioService.crear(new Usuario(nombre));
+    }
+
+    private Viaje crearViajeSolicitado(Usuario cliente, String origen, String destino) {
+        return viajeService.crear(new Viaje(cliente, origen, destino));
+    }
+
+    @Test
     void conMasViajesRetornaElChoferConMasViajes() {
-        Viaje viaje1 = viajeService.crear(new Viaje(cliente1, "origen", "destino"));
-        Viaje viaje2 = viajeService.crear(new Viaje(cliente2, "origen", "destino"));
+        Viaje viaje1 = crearViajeSolicitado(cliente1, "origen", "destino");
+        Viaje viaje2 = crearViajeSolicitado(cliente2, "origen", "destino");
+
         viajeService.aceptarViaje(viaje1.getId(), juan.getId());
+        viajeService.iniciarViaje(viaje1.getId());
+        viajeService.finalizarViaje(viaje1.getId());
+
         viajeService.aceptarViaje(viaje2.getId(), juan.getId());
 
 
-        Viaje viaje3 = viajeService.crear(new Viaje(cliente3, "origen", "destino"));
+        Viaje viaje3 = crearViajeSolicitado(cliente3, "origen", "destino");
         viajeService.aceptarViaje(viaje3.getId(), pedro.getId());
 
         Chofer resultado = adminService.conMasViajes();
 
         assertEquals(juan.getId(), resultado.getId());
+        assertEquals("juan", resultado.getNombre());
+        assertEquals("ABC123", resultado.getPatente());
     }
 
     @Test
@@ -87,10 +90,15 @@ public class AdminServiceImplTest {
         assertThrows(NoHayChoferesException.class, () -> adminService.conMasViajes());
     }
 
-    //@Test
+    @Test
     void conMasViajesTiraExcepcionSiNingunViajeTieneChofer() {
-        viajeService.crear(new Viaje(cliente1, "origen", "destino")); // queda PENDIENTE, sin chofer
+        crearViajeSolicitado(cliente1, "origen", "destino");
 
         assertThrows(NoHayChoferesException.class, () -> adminService.conMasViajes());
+    }
+
+    @AfterEach
+    void cleanup() {
+        testService.cleanUp();
     }
 }

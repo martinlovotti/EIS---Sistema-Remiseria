@@ -3,7 +3,11 @@ package ar.edu.unq.remiseria.modelo;
 import lombok.*;
 
 
-@Setter @Getter @NoArgsConstructor @AllArgsConstructor
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Usuario {
     private Long id;
     private String nombre;

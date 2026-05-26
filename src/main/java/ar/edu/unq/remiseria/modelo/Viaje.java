@@ -26,7 +26,6 @@ public class Viaje {
 
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
-        this.cliente.solicitarViaje(this);
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
     }
@@ -47,15 +46,17 @@ public class Viaje {
 
         this.setEstadoViaje(CANCELADO);
     }
-    
+
     public boolean estaSolicitado() {
         return estadoViaje == EstadoViaje.PENDIENTE;
     }
 
-    public boolean estaEnCurso(){ return estadoViaje == EstadoViaje.EN_CURSO ;}
+    public boolean estaEnCurso() {
+        return estadoViaje == EstadoViaje.EN_CURSO;
+    }
 
-    public void finalizarViaje(){
-        if(this.estaEnCurso()){
+    public void finalizarViaje() {
+        if (this.estaEnCurso()) {
             setEstadoViaje(FINALIZADO);
             cliente.setViajeActual(null);
             chofer.setViajeActual(null);
@@ -64,12 +65,14 @@ public class Viaje {
         }
     }
 
-    public boolean estaAceptado(){ return estadoViaje == EstadoViaje.ACEPTADO ;}
+    public boolean estaAceptado() {
+        return estadoViaje == EstadoViaje.ACEPTADO;
+    }
 
     public void inicializarViaje() {
-        if (this.estaAceptado()){
+        if (this.estaAceptado()) {
             setEstadoViaje(EN_CURSO);
-        }else{
+        } else {
             throw new ViajeNoPuedeInicializarseException();
         }
     }

@@ -1,10 +1,6 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
-import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
-import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
-import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerAceptadoException;
 import ar.edu.unq.remiseria.exception.*;
-import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import ar.edu.unq.remiseria.modelo.Chofer;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
@@ -12,17 +8,17 @@ import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.servicios.interfaces.ChoferService;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
+import ar.edu.unq.remiseria.testService.TestService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.EN_CURSO;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@Transactional
 public class ViajeServideImplTest {
 
     @Autowired
@@ -34,90 +30,84 @@ public class ViajeServideImplTest {
     @Autowired
     private ChoferService choferService;
 
+    @Autowired
+    private TestService testService;
+
     private Usuario cliente;
     private Chofer chofer;
-    private Viaje viaje;
-    private Viaje viajeSinChofer;
-
-    private Viaje viajeEnCurso;
     private Usuario cliente2;
 
     @BeforeEach
     void setUp() {
-        cliente = new Usuario();
-        cliente.setNombre("Pepe");
-        cliente = usuarioService.crear(cliente);
-        chofer = new Chofer("Raul", "AAA 111");
-        chofer = choferService.crear(chofer);
-        viaje = new Viaje(cliente, chofer);
-        viajeSinChofer = new Viaje(cliente, "Quilmes", "Bernal");
-        viaje.setOrigen("Quilmes");
-        viaje.setDestino("Bernal");
-        viaje.setKilometros(6.2);
-        viaje.setPrecioFinal(4500.0);
+        cliente = crearUsuario("Pepe");
+        chofer = crearChofer("Raul", "AAA 111");
+        cliente2 = crearUsuario("Jaime");
+    }
 
+    private Usuario crearUsuario(String nombre) {
+        return usuarioService.crear(new Usuario(nombre));
+    }
 
-        cliente2 = new Usuario();
-        cliente2.setNombre("Jaime");
-        cliente2 = usuarioService.crear(cliente2);
-        viajeEnCurso = new Viaje(cliente2, chofer);
+    private Chofer crearChofer(String nombre, String patente) {
+        return choferService.crear(new Chofer(nombre, patente));
+    }
 
-
-
+    private Viaje crearViajeSolicitado(String origen, String destino) {
+        return viajeService.crear(new Viaje(cliente, origen, destino));
     }
 
     @Test
     public void crearViajeTest() {
-        assertNull(viaje.getId());
-        Viaje viajeCreado = viajeService.crear(viaje);
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
         assertNotNull(viajeCreado.getId());
+        assertEquals(EstadoViaje.PENDIENTE, viajeCreado.getEstadoViaje());
+        assertNull(viajeCreado.getChofer());
     }
 
     @Test
     public void unViajeCreadoTieneUnClienteQuienLoSolicitoTest() {
-        Viaje viajeCreado = viajeService.crear(viajeSinChofer);
-        assertEquals(viajeCreado.getCliente().getId(), cliente.getId());
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
+        assertEquals(cliente.getId(), viajeCreado.getCliente().getId());
+        assertNull(viajeCreado.getChofer());
     }
 
     @Test
     public void unViajeRecienCreadoTieneEstadoPendienteTest() {
-        viajeService.crear(viajeSinChofer);
-        assertEquals(EstadoViaje.PENDIENTE, viajeSinChofer.getEstadoViaje());
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
+        assertEquals(EstadoViaje.PENDIENTE, viajeCreado.getEstadoViaje());
     }
 
     @Test
     public  void unViajeRecienCreadoNoTieneChoferAsignadoTest() {
-        viajeService.crear(viajeSinChofer);
-        assertNull(viajeSinChofer.getChofer());
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
+        assertNull(viajeCreado.getChofer());
     }
 
     @Test
     public void crearViajeParaUnClienteQueYaTieneViajeSolicitadoLanzaExcepcionTest() {
-        viajeService.crear(viajeSinChofer);
-        Usuario clienteRecuperado = usuarioService.recuperar(cliente.getId());
-        Viaje viajeSolicitado = new Viaje(clienteRecuperado, "Ezpeleta", "Berazategui");
+        crearViajeSolicitado("Quilmes", "Bernal");
+        Viaje viajeSolicitado = new Viaje(usuarioService.recuperar(cliente.getId()), "Ezpeleta", "Berazategui");
 
         assertThrows(UsuarioConViajeSolicitadoException.class, () -> viajeService.crear(viajeSolicitado));
     }
 
     @Test
     public void editarViajeSiElViajeEsValidoSeActualizaTest() {
-        Viaje viajeCreado = viajeService.crear(viaje);
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
         viajeCreado.setOrigen("Ezpeleta");
         viajeCreado.setDestino("Berazategui");
         viajeCreado.setKilometros(2.5);
         viajeCreado.setPrecioFinal(3300.0);
 
-        viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
+        Viaje viajeEditado = viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
 
-        viaje = viajeService.recuperar(viajeCreado.getId());
-        assertEquals("Ezpeleta", viaje.getOrigen());
-        assertEquals("Berazategui", viaje.getDestino());
-    };
+        assertEquals("Ezpeleta", viajeEditado.getOrigen());
+        assertEquals("Berazategui", viajeEditado.getDestino());
+    }
 
     @Test
     public void editarViajeSiElOrigenNoEsValidoLanzaExcepcionTest() {
-        Long viajeId = viajeService.crear(viaje).getId();
+        Long viajeId = crearViajeSolicitado("Quilmes", "Bernal").getId();
 
         Viaje viajeOrigenVacio = new Viaje();
         viajeOrigenVacio.setOrigen("");
@@ -137,7 +127,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void editarViajeSiElDestinoNoEsValidoLanzaExcepcionTest() {
-        Long viajeId = viajeService.crear(viaje).getId();
+        Long viajeId = crearViajeSolicitado("Quilmes", "Bernal").getId();
 
         Viaje viajeDestinoVacio = new Viaje();
         viajeDestinoVacio.setOrigen("Varela");
@@ -156,10 +146,9 @@ public class ViajeServideImplTest {
     }
 
     @Test
-    public void editarViajeSiElViajeEstaEnCursoLanzaExcepcion() {
-        // TODO implementar viajeService.aceptarViaje para poder testear este caso
-        Viaje viajeCreado = viajeService.crear(viaje);
-        viajeService.aceptarViaje(viajeCreado.getId(), choferService.crear(chofer).getId());
+    public void editarViajeSiElViajeFueAceptadoLanzaExcepcion() {
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
+        viajeService.aceptarViaje(viajeCreado.getId(), chofer.getId());
 
         assertThrows(ViajeYaIniciadoException.class, () -> {
             viajeService.editarViaje(viajeCreado.getId(), viajeCreado);
@@ -168,7 +157,9 @@ public class ViajeServideImplTest {
 
     @Test
     public void editarViajeSiElViajeNoExisteLanzaExcepcionTest() {
-        Viaje viajeNoExistente = viaje;
+        Viaje viajeNoExistente = new Viaje();
+        viajeNoExistente.setOrigen("Quilmes");
+        viajeNoExistente.setDestino("Bernal");
 
         assertThrows(ViajeNoEncontradoException.class, () -> {
            viajeService.editarViaje(912L, viajeNoExistente);
@@ -177,8 +168,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void editarViajeSoloModificaOrigenYDestinoTest() {
-        viajeSinChofer.setCliente(cliente);
-        Viaje viajeCreado = viajeService.crear(viajeSinChofer);
+        Viaje viajeCreado = crearViajeSolicitado("Quilmes", "Bernal");
 
         Viaje viajeAEditar = new Viaje();
         viajeAEditar.setId(viajeCreado.getId());
@@ -186,14 +176,14 @@ public class ViajeServideImplTest {
         viajeAEditar.setDestino("Bernal");
         viajeAEditar.setKilometros(12.0);
         viajeAEditar.setPrecioFinal(6000.0);
-        viajeAEditar.setCliente(usuarioService.crear(new Usuario()));
-        viajeAEditar.setChofer(choferService.crear(new Chofer()));
+        viajeAEditar.setCliente(usuarioService.crear(new Usuario("juan")));
+        viajeAEditar.setChofer(choferService.crear(new Chofer("luis", "ABC123")));
         viajeAEditar.setEstadoViaje(EN_CURSO);
 
         Viaje viajeEditado = viajeService.editarViaje(viajeCreado.getId(), viajeAEditar);
 
         assertEquals(viajeCreado.getEstadoViaje(), viajeEditado.getEstadoViaje());
-        assertEquals(viajeEditado.getCliente().getId(), cliente.getId());
+        assertEquals(cliente.getId(), viajeEditado.getCliente().getId());
         assertNull(viajeEditado.getChofer());
         assertEquals(viajeCreado.getPrecioFinal(), viajeEditado.getPrecioFinal());
         assertEquals(viajeCreado.getKilometros(), viajeEditado.getKilometros());
@@ -202,7 +192,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void unViajeEnEstadoPendienteSeCancelaTest() {
-        Viaje viaje = viajeService.crear(viajeSinChofer);
+        Viaje viaje = crearViajeSolicitado("Quilmes", "Bernal");
         viajeService.cancelarViaje(viaje.getId());
 
         Viaje viajeCancelado = viajeService.recuperar(viaje.getId());
@@ -212,8 +202,8 @@ public class ViajeServideImplTest {
 
     @Test
     public void unViajeEnEstadoAceptadoSeCancelaTest() {
-        viaje.setEstadoViaje(EstadoViaje.ACEPTADO);
-        Viaje viajeAceptado = viajeService.crear(viaje);
+        Viaje viajeAceptado = crearViajeSolicitado("Quilmes", "Bernal");
+        viajeService.aceptarViaje(viajeAceptado.getId(), chofer.getId());
         viajeService.cancelarViaje(viajeAceptado.getId());
 
         Viaje viajeCancelado = viajeService.recuperar(viajeAceptado.getId());
@@ -223,8 +213,9 @@ public class ViajeServideImplTest {
 
     @Test
     public void unViajeEnEstadoEnCursoNoPuedeCancelarseTest() {
-        viaje.setEstadoViaje(EstadoViaje.EN_CURSO);
-        Viaje viajeEnCurso = viajeService.crear(viaje);
+        Viaje viajeEnCurso = crearViajeSolicitado("Quilmes", "Bernal");
+        viajeService.aceptarViaje(viajeEnCurso.getId(), chofer.getId());
+        viajeService.iniciarViaje(viajeEnCurso.getId());
 
         assertThrows(
                 ViajeNoPuedeCancelarseException.class, () ->
@@ -233,9 +224,8 @@ public class ViajeServideImplTest {
     }
 
     @Test
-    public void viajeQueNoEstaEnCursoNoSeFinaliza(){
-        viajeEnCurso.setEstadoViaje(EstadoViaje.PENDIENTE);
-        Viaje viaje = viajeService.crear(viajeEnCurso);
+    public void viajePendienteNoSeFinaliza(){
+        Viaje viaje = viajeService.crear(new Viaje(cliente2, "Bernal", "Avellaneda"));
 
         assertThrows(
                 ViajeNoPuedeFinalizarseException.class, () ->
@@ -246,7 +236,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void viajeEnCursoFinaliza(){
-        Viaje viaje = viajeService.crear(viajeEnCurso);
+        Viaje viaje = viajeService.crear(new Viaje(cliente2, "Bernal", "Avellaneda"));
         viajeService.aceptarViaje(viaje.getId(), chofer.getId());
         viajeService.iniciarViaje(viaje.getId());
 
@@ -255,13 +245,13 @@ public class ViajeServideImplTest {
         Viaje viajeActualizado = viajeService.recuperar(viaje.getId());
 
         assertEquals(EstadoViaje.FINALIZADO, viajeActualizado.getEstadoViaje());
-        assertEquals(null, viajeActualizado.getCliente().getViajeActual());
-        assertEquals(null, viajeActualizado.getChofer().getViajeActual());
+        assertNull(viajeActualizado.getCliente().getViajeActual());
+        assertNull(viajeActualizado.getChofer().getViajeActual());
     }
 
     @Test
     public void viajeAceptadoInicia(){
-        Viaje viajeAceptado = viajeService.crear(viaje);
+        Viaje viajeAceptado = crearViajeSolicitado("Quilmes", "Bernal");
         viajeService.aceptarViaje(viajeAceptado.getId(), chofer.getId());
 
         viajeService.iniciarViaje(viajeAceptado.getId());
@@ -273,8 +263,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void viajeNoAceptadoInicia(){
-        viaje.setEstadoViaje(EstadoViaje.PENDIENTE);
-        Viaje viajeP = viajeService.crear(viaje);
+        Viaje viajeP = crearViajeSolicitado("Quilmes", "Bernal");
 
         assertThrows(
                 ViajeNoPuedeInicializarseException.class, () ->
@@ -284,7 +273,7 @@ public class ViajeServideImplTest {
     }
     @Test
     public void viajeSolicitadoEsAceptadoSeLeAsignaUnChoferTest() {
-        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+        Viaje viajeSinChoferCreado = crearViajeSolicitado("Quilmes", "Bernal");
 
         viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
 
@@ -296,7 +285,7 @@ public class ViajeServideImplTest {
 
     @Test
     public void cuandoUnViajeEsAceptadoSuEstadoCambiaAAceptadoTest() {
-        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+        Viaje viajeSinChoferCreado = crearViajeSolicitado("Quilmes", "Bernal");
 
         viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
 
@@ -307,20 +296,18 @@ public class ViajeServideImplTest {
 
     @Test
     public void aceptarViajeParaUnViajeQueYaFueAceptadoLanzaExcepcionTest() {
-        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+        Viaje viajeSinChoferCreado = crearViajeSolicitado("Quilmes", "Bernal");
 
         viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
 
-        Chofer chofer2 =  choferService.crear(new Chofer("Nova", "QQQ 666"));
+        Chofer chofer2 = crearChofer("Nova", "QQQ 666");
 
-        Viaje viajeRecuperado = viajeService.recuperar(viajeSinChoferCreado.getId());
-
-        assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(viajeRecuperado.getId(), chofer2.getId()));
+        assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer2.getId()));
     }
 
     @Test
     public void aceptarViajeParaUnChoferQueYaTieneUnViajeAsignadoLanzaExcepcionTest() {
-        Viaje viajeSinChoferCreado = viajeService.crear(viajeSinChofer);
+        Viaje viajeSinChoferCreado = crearViajeSolicitado("Quilmes", "Bernal");
 
         viajeService.aceptarViaje(viajeSinChoferCreado.getId(), chofer.getId());
 
@@ -328,6 +315,11 @@ public class ViajeServideImplTest {
 
 
         assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(otroViajeSinChoferCreado.getId(), chofer.getId()));
+    }
+
+    @AfterEach
+    void cleanup() {
+        testService.cleanUp();
     }
 
 

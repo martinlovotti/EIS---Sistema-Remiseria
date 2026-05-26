@@ -1,9 +1,12 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
+import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
+import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
 import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
 import ar.edu.unq.remiseria.persistencia.mapper.UsuarioMapper;
+import ar.edu.unq.remiseria.persistencia.mapper.ViajeMapper;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +20,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioDAO usuarioDAO;
     private final UsuarioMapper usuarioMapper;
+    private final ViajeMapper viajeMapper;
 
-    public UsuarioServiceImpl(UsuarioDAO usuarioDAO, UsuarioMapper usuarioMapper) {
+    public UsuarioServiceImpl(UsuarioDAO usuarioDAO, UsuarioMapper usuarioMapper, ViajeMapper viajeMapper) {
         this.usuarioDAO = usuarioDAO;
         this.usuarioMapper = usuarioMapper;
+        this.viajeMapper = viajeMapper;
     }
 
     @Override
@@ -42,8 +47,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public List<Usuario> recuperarTodos() {
-        return usuarioDAO.recuperarTodos().stream()
-            .map(usuarioMapper::toModel)
-                .collect(Collectors.toList());
+        return usuarioDAO.recuperarTodos().stream().map(usuarioMapper::toModel).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Viaje> recuperarViajesPorEstado(Long usuarioId, EstadoViaje estado) {
+        usuarioDAO.recuperar(usuarioId); // valida que el usuario existe
+        return usuarioDAO.findViajesByClienteAndEstado(usuarioId, estado).stream().map(viajeMapper::toModel).collect(Collectors.toList());
     }
 }

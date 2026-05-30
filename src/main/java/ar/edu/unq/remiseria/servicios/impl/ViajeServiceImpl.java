@@ -156,4 +156,16 @@ public class ViajeServiceImpl implements ViajeService {
         viajeDAO.save(viajeSQL);
 
     }
+
+    public void calificarViaje(Long viajeId, Long usuarioId, Double calificacion) {
+        ViajeSQL viajeSQL = viajeDAO.recuperar(viajeId);
+        Viaje viaje = viajeMapper.toModel(viajeSQL);
+
+        viaje.calificar(usuarioId, calificacion);
+
+        viajeSQL = viajeMapper.fromModel(viaje);
+
+        viajeDAO.save(viajeSQL);
+
+    }
 }

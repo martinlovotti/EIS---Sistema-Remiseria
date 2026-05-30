@@ -69,4 +69,12 @@ public class ViajeController {
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
         return ResponseEntity.ok(dto);
     }
+
+    @PutMapping("/{idViaje}/calificar/{usuarioId}/{calificacion}")
+    public ResponseEntity<RecuperarViajeDTO> calificarViaje(@PathVariable Long idViaje, @PathVariable Long usuarioId, @PathVariable Double calificacion) {
+        viajeService.calificarViaje(idViaje, usuarioId, calificacion);
+        Viaje viaje = viajeService.recuperar(idViaje);
+        RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
+        return ResponseEntity.ok(dto);
+    }
 }

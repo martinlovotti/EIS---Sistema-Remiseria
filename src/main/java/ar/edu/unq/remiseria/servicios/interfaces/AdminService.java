@@ -4,4 +4,5 @@ import ar.edu.unq.remiseria.modelo.Chofer;
 
 public interface AdminService {
     Chofer conMasViajes();
+    Chofer conMasKm();
 }

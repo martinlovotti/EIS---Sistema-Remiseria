@@ -25,4 +25,11 @@ public class AdminServiceImpl implements AdminService {
                 .map(choferMapper::toModel)
                 .orElseThrow(NoHayChoferesException::new);
     }
+
+    @Override
+    public Chofer conMasKm() {
+        return viajeDAO.recuperarChoferConMasKm()
+                .map(choferMapper::toModel)
+                .orElseThrow(NoHayChoferesException::new);
+    }
 }

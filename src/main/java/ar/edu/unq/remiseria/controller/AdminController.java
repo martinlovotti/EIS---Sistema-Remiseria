@@ -23,4 +23,9 @@ public class AdminController {
     public ResponseEntity<RecuperarChoferDTO> recuperarChoferConMasViajes() {
         return ResponseEntity.ok(RecuperarChoferDTO.desdeModelo(adminService.conMasViajes()));
     }
+
+    @GetMapping("/chofer-mas-km")
+    public ResponseEntity<RecuperarChoferDTO> recuperarChoferConMasKm() {
+        return ResponseEntity.ok(RecuperarChoferDTO.desdeModelo(adminService.conMasKm()));
+    }
 }

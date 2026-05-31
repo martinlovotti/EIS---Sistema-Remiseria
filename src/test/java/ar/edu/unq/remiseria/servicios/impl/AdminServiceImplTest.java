@@ -63,6 +63,10 @@ public class AdminServiceImplTest {
         return viajeService.crear(new Viaje(cliente, origen, destino));
     }
 
+    private Viaje crearViajeSolicitado(Usuario cliente, String origen, String destino, Double km) {
+        return viajeService.crear(new Viaje(cliente, origen, destino, km));
+    }
+
     @Test
     void conMasViajesRetornaElChoferConMasViajes() {
         Viaje viaje1 = crearViajeSolicitado(cliente1, "origen", "destino");
@@ -83,6 +87,32 @@ public class AdminServiceImplTest {
         assertEquals(juan.getId(), resultado.getId());
         assertEquals("juan", resultado.getNombre());
         assertEquals("ABC123", resultado.getPatente());
+    }
+
+
+    @Test
+    void conMasKmRetornaElChoferConMasKm() {
+        Viaje viaje1 = crearViajeSolicitado(cliente1, "origen", "destino", 100.0);
+        Viaje viaje2 = crearViajeSolicitado(cliente2, "origen", "destino", 50.0);
+        Viaje viaje3 = crearViajeSolicitado(cliente3, "origen", "destino", 30.0);
+
+        viajeService.aceptarViaje(viaje1.getId(), juan.getId());
+        viajeService.iniciarViaje(viaje1.getId());
+        viajeService.finalizarViaje(viaje1.getId());
+
+        viajeService.aceptarViaje(viaje2.getId(), pedro.getId());
+        viajeService.iniciarViaje(viaje2.getId());
+        viajeService.finalizarViaje(viaje2.getId());
+
+         //pedro acumula 50 + 30 = 80km, juan solo 100km → juan gana
+        viajeService.aceptarViaje(viaje3.getId(), pedro.getId());
+        viajeService.iniciarViaje(viaje3.getId());
+        viajeService.finalizarViaje(viaje3.getId());
+
+        Chofer resultado = adminService.conMasKm();
+
+        assertEquals(juan.getId(), resultado.getId());
+        assertEquals("juan", resultado.getNombre());
     }
 
     @Test

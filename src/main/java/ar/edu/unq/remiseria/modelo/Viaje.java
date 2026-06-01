@@ -3,6 +3,7 @@ package ar.edu.unq.remiseria.modelo;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeCancelarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeFinalizarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
+import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerCalificadoException;
 import lombok.*;
 
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.*;
@@ -24,10 +25,13 @@ public class Viaje {
     private Usuario cliente;
     private Chofer chofer;
 
+    private Double calificacion;
+
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
+        this.calificacion = null;
     }
 
     public Viaje(Usuario cliente, String origen, String destino) {
@@ -35,6 +39,7 @@ public class Viaje {
         this.origen = origen;
         this.destino = destino;
         this.estadoViaje = PENDIENTE;
+        this.calificacion = null;
     }
 
     public Viaje(Usuario cliente, String origen, String destino, Double km) {
@@ -92,6 +97,18 @@ public class Viaje {
         } else {
             throw new ViajeNoPuedeInicializarseException();
         }
+    }
+
+    public void calificar(Long usuarioId, Double calificacion) {
+        if(!this.cliente.getId().equals(usuarioId)){
+            throw new ViajeNoPuedeSerCalificadoException("El cliente no realizó el viaje");
+        }
+
+        if(this.estadoViaje != FINALIZADO) {
+            throw new ViajeNoPuedeSerCalificadoException("El viaje no ha sido finalizado");
+        }
+
+        this.calificacion = calificacion;
     }
 
 }

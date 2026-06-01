@@ -23,6 +23,7 @@ public class ViajeSQL {
 
     private Double precioFinal;
     private Double kilometros;
+    private Double calificacion;
 
     @Enumerated(EnumType.STRING)
     private EstadoViaje estadoViaje;

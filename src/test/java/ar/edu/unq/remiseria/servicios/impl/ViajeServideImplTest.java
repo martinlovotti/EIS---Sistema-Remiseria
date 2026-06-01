@@ -317,6 +317,60 @@ public class ViajeServideImplTest {
         assertThrows(ViajeNoPuedeSerAceptadoException.class, () -> viajeService.aceptarViaje(otroViajeSinChoferCreado.getId(), chofer.getId()));
     }
 
+    @Test
+    public void unViajeInicialmenteNoTieneCalificacionTest() {
+        Viaje viajeSolicitado = crearViajeSolicitado("Quilmes", "Bernal");
+
+        assertNull(viajeSolicitado.getCalificacion());
+    }
+
+    @Test
+    public void unViajeEsCalificadoTest() {
+        Viaje viajeSolicitado = crearViajeSolicitado("Quilmes", "Bernal");
+        Chofer chofer = crearChofer("Nova", "QQQ 666");
+
+        viajeService.aceptarViaje(viajeSolicitado.getId(), chofer.getId());
+
+        viajeService.iniciarViaje(viajeSolicitado.getId());
+
+        viajeService.finalizarViaje(viajeSolicitado.getId());
+
+        viajeService.calificarViaje(viajeSolicitado.getId(), viajeSolicitado.getCliente().getId(), 7.5);
+
+        Viaje viajeCalificado = viajeService.recuperar(viajeSolicitado.getId());
+
+        assertEquals(7.5, viajeCalificado.getCalificacion());
+
+    }
+
+    @Test
+    public void calificarViajeDeUnClienteDistintoLanzaExcepcionTest() {
+        Viaje viajeSolicitado = crearViajeSolicitado("Quilmes", "Bernal");
+        Chofer chofer = crearChofer("Nova", "QQQ 666");
+
+        viajeService.aceptarViaje(viajeSolicitado.getId(), chofer.getId());
+
+        viajeService.iniciarViaje(viajeSolicitado.getId());
+
+        viajeService.finalizarViaje(viajeSolicitado.getId());
+
+        Usuario cliente2 = crearUsuario("Juan");
+
+        assertThrows(ViajeNoPuedeSerCalificadoException.class, () -> viajeService.calificarViaje(viajeSolicitado.getId(), cliente2.getId(), 3.5));
+    }
+
+    @Test
+    public void calificarViajeDeUnViajeQueNoFinalizoLanzaExcepcionTest() {
+        Viaje viajeSolicitado = crearViajeSolicitado("Quilmes", "Bernal");
+        Chofer chofer = crearChofer("Nova", "QQQ 666");
+
+        viajeService.aceptarViaje(viajeSolicitado.getId(), chofer.getId());
+
+        viajeService.iniciarViaje(viajeSolicitado.getId());
+
+        assertThrows(ViajeNoPuedeSerCalificadoException.class, () -> viajeService.calificarViaje(viajeSolicitado.getId(), viajeSolicitado.getCliente().getId(), 3.5));
+    }
+
     @AfterEach
     void cleanup() {
         testService.cleanUp();

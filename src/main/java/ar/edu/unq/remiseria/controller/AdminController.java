@@ -28,4 +28,9 @@ public class AdminController {
     public ResponseEntity<RecuperarChoferDTO> recuperarChoferConMasKm() {
         return ResponseEntity.ok(RecuperarChoferDTO.desdeModelo(adminService.conMasKm()));
     }
+
+    @GetMapping("/chofer-mas-facturacion")
+    public ResponseEntity<RecuperarChoferDTO> recuperarChoferConMasFacturacion() {
+        return ResponseEntity.ok(RecuperarChoferDTO.desdeModelo(adminService.conMasFacturacion()));
+    }
 }

@@ -34,4 +34,7 @@ public interface ViajeDAO extends JpaRepository<ViajeSQL, Long> {
 
     @Query("SELECT v.chofer FROM Viaje v WHERE v.estadoViaje = 'FINALIZADO' GROUP BY v.chofer ORDER BY SUM(v.kilometros) DESC LIMIT 1")
     Optional<ChoferSQL> recuperarChoferConMasKm();
+
+    @Query("SELECT v.chofer FROM Viaje v WHERE v.estadoViaje = 'FINALIZADO' GROUP BY v.chofer ORDER BY SUM(v.precioFinal) DESC LIMIT 1")
+    Optional<ChoferSQL> recuperarChoferConMasFacturacion();
 }

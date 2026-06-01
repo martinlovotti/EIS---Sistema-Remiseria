@@ -32,4 +32,10 @@ public class AdminServiceImpl implements AdminService {
                 .map(choferMapper::toModel)
                 .orElseThrow(NoHayChoferesException::new);
     }
+
+    public Chofer conMasFacturacion() {
+        return viajeDAO.recuperarChoferConMasFacturacion()
+                .map(choferMapper::toModel)
+                .orElseThrow(NoHayChoferesException::new);
+    }
 }

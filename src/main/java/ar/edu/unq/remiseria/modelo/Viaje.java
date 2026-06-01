@@ -45,6 +45,15 @@ public class Viaje {
         this.estadoViaje = PENDIENTE;
     }
 
+    public Viaje(Usuario cliente, String origen, String destino, Double km, Double precioFinal) {
+        this.cliente = cliente;
+        this.origen = origen;
+        this.destino = destino;
+        this.kilometros = km;
+        this.precioFinal = precioFinal;
+        this.estadoViaje = PENDIENTE;
+    }
+
     public void cancelar() {
         if (!(estadoViaje == PENDIENTE || estadoViaje == ACEPTADO)) {
             throw new ViajeNoPuedeCancelarseException(estadoViaje);

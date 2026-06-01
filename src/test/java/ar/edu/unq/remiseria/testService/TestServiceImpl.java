@@ -1,5 +1,6 @@
 package ar.edu.unq.remiseria.testService;
 
+import ar.edu.unq.remiseria.persistencia.dao.AuthDAO;
 import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
 import ar.edu.unq.remiseria.persistencia.dao.UsuarioDAO;
 import ar.edu.unq.remiseria.persistencia.dao.ViajeDAO;
@@ -12,11 +13,13 @@ public class TestServiceImpl implements TestService {
     private final ChoferDAO choferDAO;
     private final ViajeDAO viajeDAO;
     private final UsuarioDAO usuarioDAO;
+    private final AuthDAO authDAO;
 
-    public TestServiceImpl(ChoferDAO choferDAO, ViajeDAO viajeDAO, UsuarioDAO usuarioDAO) {
+    public TestServiceImpl(ChoferDAO choferDAO, ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, AuthDAO authDAO) {
         this.choferDAO = choferDAO;
         this.viajeDAO = viajeDAO;
         this.usuarioDAO = usuarioDAO;
+        this.authDAO = authDAO;
     }
 
     @Override
@@ -26,5 +29,6 @@ public class TestServiceImpl implements TestService {
         viajeDAO.deleteAll();
         usuarioDAO.deleteAll();
         choferDAO.deleteAll();
+        authDAO.deleteAll();
     }
 }

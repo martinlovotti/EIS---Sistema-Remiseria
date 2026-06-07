@@ -11,6 +11,7 @@ import ar.edu.unq.remiseria.persistencia.entity.UsuarioSQL;
 import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import ar.edu.unq.remiseria.security.Role;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Random;
 
 @Component
+@Profile("!test")
 public class DataSeeder implements CommandLineRunner {
 
     private final UsuarioDAO usuarioDAO;

@@ -18,6 +18,7 @@ import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import ar.edu.unq.remiseria.persistencia.mapper.ChoferMapper;
 import ar.edu.unq.remiseria.persistencia.mapper.UsuarioMapper;
 import ar.edu.unq.remiseria.persistencia.mapper.ViajeMapper;
+import ar.edu.unq.remiseria.servicios.interfaces.DistanciaService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -35,14 +36,16 @@ public class ViajeServiceImpl implements ViajeService {
     private final ViajeMapper viajeMapper;
     private final UsuarioMapper usuarioMapper;
     private final ChoferMapper choferMapper;
+    private final DistanciaService distanciaService;
 
-    public ViajeServiceImpl(ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, ChoferDAO choferDAO, ViajeMapper viajeMapper, UsuarioMapper usuarioMapper, ChoferMapper choferMapper) {
+    public ViajeServiceImpl(ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, ChoferDAO choferDAO, ViajeMapper viajeMapper, UsuarioMapper usuarioMapper, ChoferMapper choferMapper, DistanciaService distanciaService) {
         this.viajeDAO = viajeDAO;
         this.usuarioDAO = usuarioDAO;
         this.choferDAO = choferDAO;
         this.viajeMapper = viajeMapper;
         this.usuarioMapper = usuarioMapper;
         this.choferMapper = choferMapper;
+        this.distanciaService = distanciaService;
     }
 
     @Override
@@ -53,6 +56,18 @@ public class ViajeServiceImpl implements ViajeService {
         if (usuarioModelo.tieneViajeSolicitado()) {
             throw new UsuarioConViajeSolicitadoException();
         }
+
+
+        // Calcular distancia y tarifa
+        Double km = distanciaService.calcularDistanciaKm(viaje.getOrigen(), viaje.getDestino());
+        double tarifaBase = 200.0;
+        double precioPorKm = 100.0;
+        Double precioFinal = tarifaBase + km * precioPorKm;
+
+        viaje.setKilometros(km);
+        viaje.setPrecioFinal(precioFinal);
+
+
 
         //guardar el viaje (sin la referencia circular del usuario)
         ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
@@ -168,4 +183,12 @@ public class ViajeServiceImpl implements ViajeService {
         viajeDAO.save(viajeSQL);
 
     }
+
+    public Double consultarPrecio(String origen, String destino) {
+        Double km = distanciaService.calcularDistanciaKm(origen, destino);
+        double tarifaBase = 200.0;
+        double precioPorKm = 100.0;
+        return tarifaBase + km * precioPorKm;
+    }
+
 }

@@ -77,4 +77,11 @@ public class ViajeController {
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
         return ResponseEntity.ok(dto);
     }
+
+    @GetMapping("/consultar-precio")
+    public ResponseEntity<Double> consultarPrecio(@RequestParam String origen, @RequestParam String destino) {
+        Double precio = viajeService.consultarPrecio(origen, destino);
+        return ResponseEntity.ok(precio);
+    }
+
 }

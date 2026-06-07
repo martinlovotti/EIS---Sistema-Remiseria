@@ -16,10 +16,22 @@ public class AuthUser {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(nullable = false)
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
+
+    private Long entidadId;
+
+    public AuthUser(String username, String password, Role role, Long entidadId) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.entidadId = entidadId;
+    }
 }

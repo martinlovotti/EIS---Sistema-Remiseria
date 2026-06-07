@@ -16,18 +16,8 @@ public class ChoferController {
     private final ChoferService choferService;
     public ChoferController(ChoferService c){this.choferService = c;}
 
-    @PostMapping
-    public ResponseEntity<RecuperarChoferDTO> crearChofer(@RequestBody CrearChoferDTO choferDTO){
-        Chofer chofer = choferDTO.aModelo();
-        choferService.crear(chofer);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(RecuperarChoferDTO.desdeModelo(chofer));
-
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarChofer(@PathVariable("id") Long id) {
+    public ResponseEntity<?> recuperarChofer(@PathVariable Long id) {
         Chofer c = choferService.recuperar(id);
         return ResponseEntity.ok(RecuperarChoferDTO.desdeModelo(c));
     }

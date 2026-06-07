@@ -21,18 +21,8 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     public UsuarioController(UsuarioService u){this.usuarioService = u;}
 
-    @PostMapping
-    public ResponseEntity<RecuperarUsuarioDTO> crearUsuario(@RequestBody CrearUsuarioDTO usuarioDTO){
-        Usuario usuario = usuarioDTO.aModelo();
-        usuarioService.crear(usuario);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(RecuperarUsuarioDTO.desdeModelo(usuario));
-
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarUsuario(@PathVariable("id") Long id) {
+    public ResponseEntity<?> recuperarUsuario(@PathVariable Long id) {
         Usuario u = usuarioService.recuperar(id);
         return ResponseEntity.ok(RecuperarUsuarioDTO.desdeModelo(u));
     }

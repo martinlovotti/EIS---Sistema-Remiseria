@@ -22,6 +22,8 @@ import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.ACEPTADO;
 import static java.util.Objects.isNull;
 
@@ -167,5 +169,13 @@ public class ViajeServiceImpl implements ViajeService {
 
         viajeDAO.save(viajeSQL);
 
+    }
+
+    @Override
+    public List<Viaje> viajesSolicitados() {
+        List<ViajeSQL> viajesSQL = viajeDAO.findAll();
+        List<ViajeSQL> viajesSolicitados = viajesSQL.stream().filter(viajeSQL -> viajeSQL.getEstadoViaje() == EstadoViaje.PENDIENTE).toList();
+
+        return viajesSolicitados.stream().map(viajeMapper::toModel).toList();
     }
 }

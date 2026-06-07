@@ -6,11 +6,14 @@ import ar.edu.unq.remiseria.controller.dto.ViajeDTO.EditarViajeDTO;
 import ar.edu.unq.remiseria.controller.dto.ViajeDTO.RecuperarViajeDTO;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
+import ar.edu.unq.remiseria.persistencia.entity.ViajeSQL;
 import ar.edu.unq.remiseria.servicios.interfaces.UsuarioService;
 import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -76,5 +79,12 @@ public class ViajeController {
         Viaje viaje = viajeService.recuperar(idViaje);
         RecuperarViajeDTO dto = RecuperarViajeDTO.desdeModelo(viaje);
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping("/solicitados")
+    public ResponseEntity<List<RecuperarViajeDTO>> viajesSolicitados() {
+        List<Viaje> viajesSolicitados =  viajeService.viajesSolicitados();
+        List<RecuperarViajeDTO> dtos = viajesSolicitados.stream().map(RecuperarViajeDTO::desdeModelo).toList();
+        return ResponseEntity.ok(dtos);
     }
 }

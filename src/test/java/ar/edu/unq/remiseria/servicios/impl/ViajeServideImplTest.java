@@ -371,6 +371,29 @@ public class ViajeServideImplTest {
         assertThrows(ViajeNoPuedeSerCalificadoException.class, () -> viajeService.calificarViaje(viajeSolicitado.getId(), viajeSolicitado.getCliente().getId(), 3.5));
     }
 
+    @Test
+    public void inicialmenteNoHayViajesSolicitadosTest() {
+        assertTrue(viajeService.viajesSolicitados().isEmpty());
+    }
+
+    @Test
+    public void cuandoUnClienteSolicitaUnViajeSeAgregaAViajesSolicitadosTest() {
+        crearViajeSolicitado("Quilmes", "Bernal");
+
+        assertFalse(viajeService.viajesSolicitados().isEmpty());
+        assertEquals(viajeService.viajesSolicitados().size(), 1);
+    }
+
+    @Test
+    public void cuandoUnChoferAceptaUnViajeSolicitadoElViajeDejaDeEstarEnViajesSolicitadosTest() {
+        Viaje viajeSolicitado = crearViajeSolicitado("Quilmes", "Bernal");
+        Chofer chofer = crearChofer("Nova", "QQQ 666");
+
+        viajeService.aceptarViaje(viajeSolicitado.getId(), chofer.getId());
+
+        assertTrue(viajeService.viajesSolicitados().isEmpty());
+    }
+
     @AfterEach
     void cleanup() {
         testService.cleanUp();

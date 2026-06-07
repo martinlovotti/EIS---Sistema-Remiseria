@@ -12,4 +12,5 @@ public interface UsuarioService {
      void eliminar(Long id);
      List<Usuario> recuperarTodos();
     List<Viaje> recuperarViajesPorEstado(Long usuarioId, EstadoViaje estado);
+    List<Viaje> recuperarTodosLosViajes(Long usuarioId);
 }

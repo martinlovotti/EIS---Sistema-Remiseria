@@ -34,6 +34,9 @@ public interface UsuarioDAO extends JpaRepository<UsuarioSQL, Long>{
     @Query("UPDATE Usuario u SET u.viajeActual = null")
     void desvincularViajes();
 
-    @Query("SELECT v FROM Viaje v WHERE v.cliente.id = :usuarioId AND v.estadoViaje = :estado")
+    @Query("SELECT v FROM Viaje v WHERE v.cliente.id = :usuarioId AND v.estadoViaje = :estado ORDER BY v.fechaCreacion DESC")
     List<ViajeSQL> findViajesByClienteAndEstado(@Param("usuarioId") Long usuarioId, @Param("estado") EstadoViaje estado);
+
+    @Query("SELECT v FROM Viaje v WHERE v.cliente.id = :usuarioId ORDER BY v.fechaCreacion DESC")
+    List<ViajeSQL> findViajesByCliente(@Param("usuarioId") Long usuarioId);
 }

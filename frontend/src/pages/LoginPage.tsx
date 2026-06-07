@@ -25,19 +25,36 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    if (!form.username.trim()) {
+      setError("El usuario es obligatorio");
+      return;
+    }
+
+    if (!form.password.trim()) {
+      setError("La contraseña es obligatoria");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const path = await login(form);
+      const path = await login({
+        username: form.username,
+        password: form.password,
+      });
+
       navigate(path);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
@@ -47,84 +64,84 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout
-      title="Iniciar sesión"
-      subtitle="Accedé con tu usuario y contraseña"
-    >
-      <Box component="form" onSubmit={handleSubmit}>
-        <Stack spacing={2.2}>
-          <TextField
-            label="Usuario"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            fullWidth
-            required
-            variant="outlined"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                bgcolor: "#fff",
-              },
-            }}
-          />
+      <AuthLayout
+          title="Iniciar sesión"
+          subtitle="Accedé con tu usuario y contraseña"
+      >
+        <Box component="form" onSubmit={handleSubmit}>
+          <Stack spacing={2.2}>
+            <TextField
+                label="Usuario"
+                name="username"
+                value={form.username}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    bgcolor: "#fff",
+                  },
+                }}
+            />
 
-          <TextField
-            label="Contraseña"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            fullWidth
-            required
-            variant="outlined"
-            sx={{
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 2,
-                bgcolor: "#fff",
-              },
-            }}
-          />
+            <TextField
+                label="Contraseña"
+                name="password"
+                type="password"
+                value={form.password}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                    bgcolor: "#fff",
+                  },
+                }}
+            />
 
-          {error && <Alert severity="error">{error}</Alert>}
+            {error && <Alert severity="error">{error}</Alert>}
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={loading}
-            sx={{
-              py: 1.4,
-              borderRadius: 2,
-              textTransform: "none",
-              fontWeight: 700,
-              bgcolor: "#111",
-              boxShadow: "none",
-              "&:hover": {
-                bgcolor: "#000",
-                boxShadow: "none",
-              },
-            }}
-          >
-            {loading ? "Ingresando..." : "Ingresar"}
-          </Button>
-
-          <Typography
-            variant="body2"
-            sx={{ textAlign: "center", color: "#666" }}
-          >
-            ¿No tenés cuenta?{" "}
-            <Link
-              component={RouterLink}
-              to="/register"
-              underline="hover"
-              sx={{ color: "#111", fontWeight: 600 }}
+            <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                disabled={loading}
+                sx={{
+                  py: 1.4,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  fontWeight: 700,
+                  bgcolor: "#111",
+                  boxShadow: "none",
+                  "&:hover": {
+                    bgcolor: "#000",
+                    boxShadow: "none",
+                  },
+                }}
             >
-              Registrate
-            </Link>
-          </Typography>
-        </Stack>
-      </Box>
-    </AuthLayout>
+              {loading ? "Ingresando..." : "Ingresar"}
+            </Button>
+
+            <Typography
+                variant="body2"
+                sx={{ textAlign: "center", color: "#666" }}
+            >
+              ¿No tenés cuenta?{" "}
+              <Link
+                  component={RouterLink}
+                  to="/register"
+                  underline="hover"
+                  sx={{ color: "#111", fontWeight: 600 }}
+              >
+                Registrate
+              </Link>
+            </Typography>
+          </Stack>
+        </Box>
+      </AuthLayout>
   );
 }

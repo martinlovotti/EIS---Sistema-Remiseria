@@ -7,17 +7,19 @@ export interface LoginRequestDTO {
 
 export interface LoginResponseDTO {
   token: string;
+  role: Role;
+  entidadId: number
 }
 
-export interface RegisterRequestDTO {
+export interface RegisterUsuarioRequestDTO {
   username: string;
   password: string;
-  role: Role;
+  nombre: string;
 }
 
-export interface JwtPayload {
-  sub: string;
-  role: Role;
-  exp?: number;
-  iat?: number;
+export interface RegisterChoferRequestDTO {
+  username: string;
+  password: string;
+  nombre: string;
+  patente: string;
 }

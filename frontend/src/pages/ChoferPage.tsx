@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Card,
@@ -7,67 +8,97 @@ import {
   Divider,
   Grid,
   Paper,
+  Snackbar,
   Stack,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 
-const viajesDisponibles = [
-  {
-    id: 27,
-    origen: "Quilmes Centro",
-    destino: "Bernal",
-    pasajero: "Juan Pérez",
-    estado: "Pendiente",
-  },
-  {
-    id: 31,
-    origen: "Don Bosco",
-    destino: "Ezpeleta",
-    pasajero: "Ana Gómez",
-    estado: "Pendiente",
-  },
-  {
-    id: 35,
-    origen: "Villa Argentina",
-    destino: "Quilmes Oeste",
-    pasajero: "Luis Fernández",
-    estado: "Pendiente",
-  },
-];
-
-const viajesActivos = [
-  {
-    id: 18,
-    origen: "Bernal",
-    destino: "Quilmes Centro",
-    pasajero: "María López",
-    estado: "Aceptado",
-  },
-];
+import {
+  getViajesDisponibles,
+  aceptarViaje,
+  iniciarViaje,
+  finalizarViaje,
+  type ViajeDTO,
+} from '../api/viaje';
 
 export default function ChoferPage() {
-  function handleAceptarViaje(id: number) {
-    // TODO: conectar con PATCH /viaje/{idViaje}/aceptarViaje/{idChofer}
-    console.log("TODO aceptar viaje", id);
+  const [viajesDisponibles, setViajesDisponibles] = useState<ViajeDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [viajeActivo, setViajeActivo] = useState<ViajeDTO | null>(null);
+
+  useEffect(() => {
+    const fetchViajes = async () => {
+      try {
+        const viajes = await getViajesDisponibles();
+        setViajesDisponibles(viajes);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchViajes();
+  }, []);
+
+  async function handleAceptarViaje(id: number) {
+    try {
+      const idChofer = 1;
+      await aceptarViaje(id, idChofer);
+
+      const viajeAceptado = viajesDisponibles.find((v) => v.id === id);
+
+      if (viajeAceptado) {
+        setViajeActivo({
+          ...viajeAceptado,
+          estado: 'ACEPTADO',
+        });
+      }
+
+      const viajes = await getViajesDisponibles();
+      setViajesDisponibles(viajes);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        setOpenSnackbar(true);
+      }
+    }
   }
 
-  function handleIniciarViaje(id: number) {
-    // TODO: conectar con POST /viaje/{id}/iniciar
-    console.log("TODO iniciar viaje", id);
+  async function handleIniciarViaje(id: number) {
+    try {
+      await iniciarViaje(id);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        setOpenSnackbar(true);
+      }
+    }
   }
 
-  function handleFinalizarViaje(id: number) {
-    // TODO: conectar con POST /viaje/{id}/finalizar
-    console.log("TODO finalizar viaje", id);
+  async function handleFinalizarViaje(id: number) {
+    try {
+      await finalizarViaje(id);
+
+      setViajeActivo(null);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        setOpenSnackbar(true);
+      }
+    }
   }
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
       <Stack spacing={1} sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, color: "#111" }}>
+        <Typography variant='h4' sx={{ fontWeight: 700, color: '#111' }}>
           Panel de chofer
         </Typography>
-        <Typography variant="body1" sx={{ color: "#666" }}>
+        <Typography variant='body1' sx={{ color: '#666' }}>
           Revisá viajes disponibles y gestioná tus viajes activos.
         </Typography>
       </Stack>
@@ -79,83 +110,90 @@ export default function ChoferPage() {
             sx={{
               p: 3,
               borderRadius: 3,
-              border: "1px solid #e8e8e8",
-              bgcolor: "#fff",
+              border: '1px solid #e8e8e8',
+              bgcolor: '#fff',
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+            <Typography variant='h6' sx={{ fontWeight: 700, mb: 2 }}>
               Viajes disponibles
             </Typography>
 
             <Stack spacing={2}>
-              {viajesDisponibles.map((viaje) => (
-                <Card
-                  key={viaje.id}
-                  elevation={0}
-                  sx={{
-                    borderRadius: 3,
-                    border: "1px solid #ececec",
-                    bgcolor: "#fcfcfc",
-                  }}
-                >
-                  <CardContent>
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      spacing={2}
-                      sx={{
-                        justifyContent: "space-between",
-                        alignItems: { xs: "flex-start", sm: "center" },
-                      }}
-                    >
-                      <Box>
-                        <Typography sx={{ fontWeight: 700, color: "#111" }}>
-                          {viaje.origen} → {viaje.destino}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#666", mt: 0.5 }}>
-                          Pasajero: {viaje.pasajero}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#666" }}>
-                          Viaje #{viaje.id}
-                        </Typography>
-                      </Box>
-
-                      <Chip
-                        label={viaje.estado}
-                        variant="outlined"
-                        sx={{ alignSelf: "flex-start" }}
-                      />
-                    </Stack>
-
-                    <Divider sx={{ my: 2 }} />
-
-                    <Stack
-                      direction="row"
-                      sx={{
-                        justifyContent: "flex-end",
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        onClick={() => handleAceptarViaje(viaje.id)}
+              {loading ? (
+                <Typography>Cargando viajes...</Typography>
+              ) : (
+                viajesDisponibles.map((viaje) => (
+                  <Card
+                    key={viaje.id}
+                    elevation={0}
+                    sx={{
+                      borderRadius: 3,
+                      border: '1px solid #ececec',
+                      bgcolor: '#fcfcfc',
+                    }}
+                  >
+                    <CardContent>
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={2}
                         sx={{
-                          bgcolor: "#111",
-                          color: "#fff",
-                          textTransform: "none",
-                          fontWeight: 700,
-                          borderRadius: 2,
-                          boxShadow: "none",
-                          "&:hover": {
-                            bgcolor: "#000",
-                            boxShadow: "none",
-                          },
+                          justifyContent: 'space-between',
+                          alignItems: { xs: 'flex-start', sm: 'center' },
                         }}
                       >
-                        Aceptar viaje
-                      </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Box>
+                          <Typography sx={{ fontWeight: 700, color: '#111' }}>
+                            {viaje.origen} → {viaje.destino}
+                          </Typography>
+                          <Typography
+                            variant='body2'
+                            sx={{ color: '#666', mt: 0.5 }}
+                          >
+                            Pasajero: {viaje.usuario.nombre}
+                          </Typography>
+                          <Typography variant='body2' sx={{ color: '#666' }}>
+                            Viaje #{viaje.id}
+                          </Typography>
+                        </Box>
+
+                        <Chip
+                          label={viaje.estado}
+                          variant='outlined'
+                          sx={{ alignSelf: 'flex-start' }}
+                        />
+                      </Stack>
+
+                      <Divider sx={{ my: 2 }} />
+
+                      <Stack
+                        direction='row'
+                        sx={{
+                          justifyContent: 'flex-end',
+                        }}
+                      >
+                        <Button
+                          variant='contained'
+                          onClick={() => handleAceptarViaje(viaje.id)}
+                          sx={{
+                            bgcolor: '#111',
+                            color: '#fff',
+                            textTransform: 'none',
+                            fontWeight: 700,
+                            borderRadius: 2,
+                            boxShadow: 'none',
+                            '&:hover': {
+                              bgcolor: '#000',
+                              boxShadow: 'none',
+                            },
+                          }}
+                        >
+                          Aceptar viaje
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </Stack>
           </Paper>
         </Grid>
@@ -166,54 +204,54 @@ export default function ChoferPage() {
             sx={{
               p: 3,
               borderRadius: 3,
-              border: "1px solid #e8e8e8",
-              bgcolor: "#fff",
-              height: "100%",
+              border: '1px solid #e8e8e8',
+              bgcolor: '#fff',
+              height: '100%',
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
+            <Typography variant='h6' sx={{ fontWeight: 700, mb: 2 }}>
               Viaje activo
             </Typography>
 
             <Stack spacing={2}>
-              {viajesActivos.map((viaje) => (
+              {viajeActivo && (
                 <Card
-                  key={viaje.id}
+                  key={viajeActivo.id}
                   elevation={0}
                   sx={{
                     borderRadius: 3,
-                    border: "1px solid #ececec",
-                    bgcolor: "#fcfcfc",
+                    border: '1px solid #ececec',
+                    bgcolor: '#fcfcfc',
                   }}
                 >
                   <CardContent>
-                    <Typography sx={{ fontWeight: 700, color: "#111" }}>
-                      {viaje.origen} → {viaje.destino}
+                    <Typography sx={{ fontWeight: 700, color: '#111' }}>
+                      {viajeActivo.origen} → {viajeActivo.destino}
                     </Typography>
 
-                    <Typography variant="body2" sx={{ color: "#666", mt: 0.5 }}>
-                      Pasajero: {viaje.pasajero}
+                    <Typography variant='body2' sx={{ color: '#666', mt: 0.5 }}>
+                      Pasajero: {viajeActivo.usuario.nombre}
                     </Typography>
 
-                    <Typography variant="body2" sx={{ color: "#666" }}>
-                      Viaje #{viaje.id}
+                    <Typography variant='body2' sx={{ color: '#666' }}>
+                      Viaje #{viajeActivo.id}
                     </Typography>
 
                     <Divider sx={{ my: 2 }} />
 
                     <Stack spacing={1.5}>
                       <Button
-                        variant="outlined"
+                        variant='outlined'
                         fullWidth
-                        onClick={() => handleIniciarViaje(viaje.id)}
+                        onClick={() => handleIniciarViaje(viajeActivo.id)}
                         sx={{
-                          textTransform: "none",
-                          borderColor: "#d0d0d0",
-                          color: "#111",
+                          textTransform: 'none',
+                          borderColor: '#d0d0d0',
+                          color: '#111',
                           fontWeight: 600,
-                          "&:hover": {
-                            borderColor: "#111",
-                            bgcolor: "#fafafa",
+                          '&:hover': {
+                            borderColor: '#111',
+                            bgcolor: '#fafafa',
                           },
                         }}
                       >
@@ -221,19 +259,19 @@ export default function ChoferPage() {
                       </Button>
 
                       <Button
-                        variant="contained"
+                        variant='contained'
                         fullWidth
-                        onClick={() => handleFinalizarViaje(viaje.id)}
+                        onClick={() => handleFinalizarViaje(viajeActivo.id)}
                         sx={{
-                          bgcolor: "#111",
-                          color: "#fff",
-                          textTransform: "none",
+                          bgcolor: '#111',
+                          color: '#fff',
+                          textTransform: 'none',
                           fontWeight: 700,
                           borderRadius: 2,
-                          boxShadow: "none",
-                          "&:hover": {
-                            bgcolor: "#000",
-                            boxShadow: "none",
+                          boxShadow: 'none',
+                          '&:hover': {
+                            bgcolor: '#000',
+                            boxShadow: 'none',
                           },
                         }}
                       >
@@ -242,11 +280,20 @@ export default function ChoferPage() {
                     </Stack>
                   </CardContent>
                 </Card>
-              ))}
+              )}
             </Stack>
           </Paper>
         </Grid>
       </Grid>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert severity='error' onClose={() => setOpenSnackbar(false)}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

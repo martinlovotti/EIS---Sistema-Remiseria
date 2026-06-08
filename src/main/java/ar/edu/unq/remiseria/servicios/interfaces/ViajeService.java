@@ -19,4 +19,6 @@ public interface ViajeService {
     void finalizarViaje(Long viajeId); // Setea en null el viaje del lado del cliente y del chofer
 
     void calificarViaje(Long viajeId, Long usuarioId, Double calificacion);
+
+    Double consultarPrecio(String origen, String destino);
 }

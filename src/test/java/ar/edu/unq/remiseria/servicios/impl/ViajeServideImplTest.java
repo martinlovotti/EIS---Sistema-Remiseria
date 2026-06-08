@@ -371,6 +371,40 @@ public class ViajeServideImplTest {
         assertThrows(ViajeNoPuedeSerCalificadoException.class, () -> viajeService.calificarViaje(viajeSolicitado.getId(), viajeSolicitado.getCliente().getId(), 3.5));
     }
 
+
+    @Test
+    public void crearViajeCalculaDistanciaYPrecioConAPI() {
+        // Creamos un viaje con direcciones reales
+        Viaje viajeCreado = crearViajeSolicitado("Av. Corrientes 2000, Buenos Aires", "Av. Libertador 750, Buenos Aires");
+
+        Viaje viajeRecuperado = viajeService.recuperar(viajeCreado.getId());
+
+        // Validamos que se haya calculado la distancia
+        assertNotNull(viajeRecuperado.getKilometros());
+        assertTrue(viajeRecuperado.getKilometros() > 0);
+
+        // Validamos que se haya calculado el precio final
+        assertNotNull(viajeRecuperado.getPrecioFinal());
+        assertTrue(viajeRecuperado.getPrecioFinal() > 200.0, "El precio debe incluir la tarifa base");
+
+        // Validamos rango aproximado de distancia
+        assertTrue(viajeRecuperado.getKilometros() > 2 && viajeRecuperado.getKilometros() < 6,
+                "La distancia debería estar entre 2 y 6 km");
+    }
+
+    @Test
+    public void consultarPrecioConAPITest() {
+        String origen = "Av. Corrientes 2000, Buenos Aires";
+        String destino = "Av. Libertador 750, Buenos Aires";
+
+        Double precio = viajeService.consultarPrecio(origen, destino);
+
+        assertNotNull(precio);
+        assertTrue(precio > 200.0, "El precio debe incluir la tarifa base");
+        assertTrue(precio < 10000.0, "El precio no debería ser excesivo");
+    }
+
+
     @AfterEach
     void cleanup() {
         testService.cleanUp();

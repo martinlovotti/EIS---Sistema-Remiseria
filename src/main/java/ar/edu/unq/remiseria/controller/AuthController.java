@@ -1,8 +1,9 @@
 package ar.edu.unq.remiseria.controller;
 
-import ar.edu.unq.remiseria.controller.dto.LoginRequestDTO;
-import ar.edu.unq.remiseria.controller.dto.LoginResponseDTO;
-import ar.edu.unq.remiseria.controller.dto.RegisterRequestDTO;
+import ar.edu.unq.remiseria.controller.dto.AuthDTO.LoginRequestDTO;
+import ar.edu.unq.remiseria.controller.dto.AuthDTO.LoginResponseDTO;
+import ar.edu.unq.remiseria.controller.dto.AuthDTO.RegisterChoferRequestDTO;
+import ar.edu.unq.remiseria.controller.dto.AuthDTO.RegisterUsuarioRequestDTO;
 import ar.edu.unq.remiseria.servicios.interfaces.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,16 +19,20 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody RegisterRequestDTO request) {
-        authService.register(request);
-        return ResponseEntity.ok("Usuario creado");
+    @PostMapping("/register/usuario")
+    public ResponseEntity<String> registerUsuario(@RequestBody RegisterUsuarioRequestDTO request) {
+        authService.registerUsuario(request);
+        return ResponseEntity.ok("Usuario registrado correctamente");
+    }
+
+    @PostMapping("/register/chofer")
+    public ResponseEntity<String> registerChofer(@RequestBody RegisterChoferRequestDTO request) {
+        authService.registerChofer(request);
+        return ResponseEntity.ok("Chofer registrado correctamente");
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        String token = authService.login(request);
-        return ResponseEntity.ok(new LoginResponseDTO(token));
+        return ResponseEntity.ok(authService.login(request));
     }
-
 }

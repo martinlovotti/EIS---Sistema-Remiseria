@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
 
@@ -33,4 +35,12 @@ public class ViajeSQL {
 
     @ManyToOne
     private ChoferSQL chofer;
+
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @PrePersist
+    protected void onCreate() {
+        fechaCreacion = LocalDateTime.now();
+    }
 }

@@ -55,4 +55,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuarioDAO.recuperar(usuarioId); // valida que el usuario existe
         return usuarioDAO.findViajesByClienteAndEstado(usuarioId, estado).stream().map(viajeMapper::toModel).collect(Collectors.toList());
     }
+
+    @Override
+    public List<Viaje> recuperarTodosLosViajes(Long usuarioId) {
+        usuarioDAO.recuperar(usuarioId); // valida que el usuario existe
+        return usuarioDAO.findViajesByCliente(usuarioId).stream().map(viajeMapper::toModel).collect(Collectors.toList());
+    }
 }

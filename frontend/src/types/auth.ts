@@ -16,6 +16,7 @@ export interface RegisterRequestDTO {
 }
 
 export interface JwtPayload {
+  userId: number;
   sub: string;
   role: Role;
   exp?: number;

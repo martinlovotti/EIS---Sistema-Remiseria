@@ -6,6 +6,8 @@ import ar.edu.unq.remiseria.exception.ViajeNoPuedeInicializarseException;
 import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerCalificadoException;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.*;
 
 @Getter
@@ -26,12 +28,14 @@ public class Viaje {
     private Chofer chofer;
 
     private Double calificacion;
+    private LocalDateTime fechaCreacion;
 
     public Viaje(Usuario cliente, Chofer chofer) {
         this.cliente = cliente;
         this.chofer = chofer;
         this.estadoViaje = PENDIENTE;
         this.calificacion = null;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     public Viaje(Usuario cliente, String origen, String destino) {
@@ -40,6 +44,7 @@ public class Viaje {
         this.destino = destino;
         this.estadoViaje = PENDIENTE;
         this.calificacion = null;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     public Viaje(Usuario cliente, String origen, String destino, Double km) {
@@ -48,6 +53,7 @@ public class Viaje {
         this.destino = destino;
         this.kilometros = km;
         this.estadoViaje = PENDIENTE;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     public Viaje(Usuario cliente, String origen, String destino, Double km, Double precioFinal) {
@@ -57,6 +63,7 @@ public class Viaje {
         this.kilometros = km;
         this.precioFinal = precioFinal;
         this.estadoViaje = PENDIENTE;
+        this.fechaCreacion = LocalDateTime.now();
     }
 
     public void cancelar() {

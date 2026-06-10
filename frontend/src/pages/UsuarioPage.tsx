@@ -10,52 +10,161 @@ import {
   Stack,
   TextField,
   Typography,
+  Alert,
 } from "@mui/material";
+import { useState, useEffect } from "react";
+import { solicitarViaje, cancelarViaje, recuperarTodosLosViajes } from "../api/usuario.ts";
+import { useAuth } from "../context/AuthContext.tsx";
 
-const historial = [
-  {
-    id: "#1842",
-    origen: "Quilmes Centro",
-    destino: "Bernal",
-    estado: "Finalizado",
-    fecha: "03/06/2026",
-  },
-  {
-    id: "#1831",
-    origen: "Don Bosco",
-    destino: "Quilmes Oeste",
-    estado: "Cancelado",
-    fecha: "01/06/2026",
-  },
-  {
-    id: "#1825",
-    origen: "Ezpeleta",
-    destino: "Bernal",
-    estado: "Finalizado",
-    fecha: "29/05/2026",
-  },
-];
+interface Viaje {
+  id: string;
+  origen: string;
+  destino: string;
+  estado: string;
+  fechaCreacion?: string;
+}
+
+function mapEstado(estadoBackend: string): string {
+  const estadoMap: { [key: string]: string } = {
+    "FINALIZADO": "Finalizado",
+    "CANCELADO": "Cancelado",
+    "PENDIENTE": "Pendiente",
+    "ACEPTADO": "Aceptado",
+    "EN_CURSO": "En curso",
+  };
+  return estadoMap[estadoBackend] || estadoBackend;
+}
+
+function formatearFecha(fechaCreacion?: string): string {
+  if (!fechaCreacion) return "";
+  try {
+    const fecha = new Date(fechaCreacion);
+    return fecha.toLocaleDateString("es-AR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return fechaCreacion;
+  }
+}
 
 function getStatusColor(estado: string) {
   if (estado === "Finalizado") return "success";
   if (estado === "Cancelado") return "default";
-  return "warning";
+  if (estado === "En curso") return "warning";
+  if (estado === "Aceptado") return "info";
+  return "default";
 }
 
 export default function UsuarioPage() {
-  function handleSolicitarViaje() {
-    // TODO: conectar con POST /viaje
-    console.log("TODO solicitar viaje");
+  const { entidadId } = useAuth();
+  const [origen, setOrigen] = useState("");
+  const [destino, setDestino] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [errorHistorial, setErrorHistorial] = useState("");
+  const [success, setSuccess] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState<string | null>(null);
+  const [viajesFiltrados, setViajesFiltrados] = useState<Viaje[]>([]);
+  const [todosLosViajes, setTodosLosViajes] = useState<Viaje[]>([]);
+  const [cargandoHistorial, setCargandoHistorial] = useState(true);
+
+  useEffect(() => {
+    cargarHistorial();
+  }, []);
+
+  async function cargarHistorial() {
+    if (!entidadId) {
+      setErrorHistorial("No se pudo obtener tu ID de usuario");
+      setCargandoHistorial(false);
+      return;
+    }
+
+    try {
+      setCargandoHistorial(true);
+      const viajes = await recuperarTodosLosViajes(entidadId);
+      setTodosLosViajes(viajes);
+      setViajesFiltrados(viajes);
+    } catch (err) {
+      setErrorHistorial(
+        err instanceof Error ? err.response.data.message : "Error al cargar el historial"
+      );
+    } finally {
+      setCargandoHistorial(false);
+    }
   }
 
-  function handleFiltrarHistorial() {
-    // TODO: conectar con GET /usuario/{id}/viajes?estado=...
-    console.log("TODO filtrar historial");
+  async function handleSolicitarViaje() {
+    if (!origen.trim() || !destino.trim()) {
+      setError("Por favor completa origen y destino");
+      return;
+    }
+
+    if (!entidadId) {
+      setError("No se pudo obtener tu ID de usuario");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await solicitarViaje({
+        usuarioId: entidadId,
+        origen,
+        destino,
+        observaciones: observaciones || undefined,
+      });
+      setSuccess("¡Viaje solicitado correctamente!");
+      setOrigen("");
+      setDestino("");
+      setObservaciones("");
+      await cargarHistorial();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.response?.data?.message : "Error al solicitar el viaje"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
-  function handleCancelarViaje(id: string) {
-    // TODO: conectar con POST /viaje/{id}/cancelar
-    console.log("TODO cancelar viaje", id);
+  async function handleFiltrarHistorial(estado: "FINALIZADO" | "CANCELADO") {
+    if (filtroEstado === estado) {
+      setFiltroEstado(null);
+      setViajesFiltrados(todosLosViajes);
+      return;
+    }
+
+    const viajesOriginales = todosLosViajes.filter(
+      (v) => v.estado === estado
+    );
+    setViajesFiltrados(viajesOriginales);
+    setFiltroEstado(estado);
+  }
+
+  async function handleCancelarViaje(id: string) {
+    if (!confirm("¿Estás seguro de que deseas cancelar este viaje?")) {
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      await cancelarViaje(id);
+      setSuccess("Viaje cancelado correctamente");
+      await cargarHistorial();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Error al cancelar el viaje"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -86,16 +195,25 @@ export default function UsuarioPage() {
             </Typography>
 
             <Stack spacing={2}>
+              {error && <Alert severity="error">{error}</Alert>}
+              {success && <Alert severity="success">{success}</Alert>}
+
               <TextField
                 label="Origen"
                 placeholder="Ej. Quilmes Centro"
                 fullWidth
+                value={origen}
+                onChange={(e) => setOrigen(e.target.value)}
+                disabled={loading}
               />
 
               <TextField
                 label="Destino"
                 placeholder="Ej. Bernal"
                 fullWidth
+                value={destino}
+                onChange={(e) => setDestino(e.target.value)}
+                disabled={loading}
               />
 
               <TextField
@@ -104,12 +222,16 @@ export default function UsuarioPage() {
                 fullWidth
                 multiline
                 minRows={3}
+                value={observaciones}
+                onChange={(e) => setObservaciones(e.target.value)}
+                disabled={loading}
               />
 
               <Button
                 variant="contained"
                 fullWidth
                 onClick={handleSolicitarViaje}
+                disabled={loading}
                 sx={{
                   py: 1.4,
                   mt: 1,
@@ -125,7 +247,7 @@ export default function UsuarioPage() {
                   },
                 }}
               >
-                Solicitar viaje
+                {loading ? "Enviando..." : "Solicitar viaje"}
               </Button>
             </Stack>
           </Paper>
@@ -152,19 +274,22 @@ export default function UsuarioPage() {
             >
               <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 Historial
+                {filtroEstado && ` (${filtroEstado})`}
               </Typography>
 
               <Stack direction="row" spacing={1}>
                 <Button
-                  variant="outlined"
-                  onClick={handleFiltrarHistorial}
+                  variant={filtroEstado === "Finalizado" ? "contained" : "outlined"}
+                  onClick={() => handleFiltrarHistorial("Finalizado")}
+                  disabled={loading || cargandoHistorial}
                   sx={{
                     textTransform: "none",
                     borderColor: "#d0d0d0",
-                    color: "#111",
+                    color: filtroEstado === "Finalizado" ? "#fff" : "#111",
+                    bgcolor: filtroEstado === "Finalizado" ? "#111" : "transparent",
                     "&:hover": {
                       borderColor: "#111",
-                      bgcolor: "#fafafa",
+                      bgcolor: filtroEstado === "Finalizado" ? "#000" : "#fafafa",
                     },
                   }}
                 >
@@ -172,15 +297,17 @@ export default function UsuarioPage() {
                 </Button>
 
                 <Button
-                  variant="outlined"
-                  onClick={handleFiltrarHistorial}
+                  variant={filtroEstado === "Cancelado" ? "contained" : "outlined"}
+                  onClick={() => handleFiltrarHistorial("Cancelado")}
+                  disabled={loading || cargandoHistorial}
                   sx={{
                     textTransform: "none",
                     borderColor: "#d0d0d0",
-                    color: "#111",
+                    color: filtroEstado === "Cancelado" ? "#fff" : "#111",
+                    bgcolor: filtroEstado === "Cancelado" ? "#111" : "transparent",
                     "&:hover": {
                       borderColor: "#111",
-                      bgcolor: "#fafafa",
+                      bgcolor: filtroEstado === "Cancelado" ? "#000" : "#fafafa",
                     },
                   }}
                 >
@@ -190,61 +317,75 @@ export default function UsuarioPage() {
             </Stack>
 
             <Stack spacing={2}>
-              {historial.map((viaje) => (
-                <Card
-                  key={viaje.id}
-                  elevation={0}
-                  sx={{
-                    borderRadius: 3,
-                    border: "1px solid #ececec",
-                    bgcolor: "#fcfcfc",
-                  }}
-                >
-                  <CardContent>
-                    <Stack
-                      direction={{ xs: "column", sm: "row" }}
-                      spacing={2}
-                      sx={{
-                        mb: 2,
-                        justifyContent: "space-between",
-                        alignItems: { xs: "stretch", sm: "center" },
-                      }}
-                    >
-
-                      <Box>
-                        <Typography sx={{ fontWeight: 700, color: "#111" }}>
-                          {viaje.origen} → {viaje.destino}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: "#666", mt: 0.5 }}>
-                          Viaje {viaje.id} · {viaje.fecha}
-                        </Typography>
-                      </Box>
-
-                      <Chip
-                        label={viaje.estado}
-                        color={getStatusColor(viaje.estado)}
-                        variant="outlined"
-                        sx={{ alignSelf: "flex-start" }}
-                      />
-                    </Stack>
-
-                    <Divider sx={{ my: 2 }} />
-
-                    <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
-                      <Button
-                        onClick={() => handleCancelarViaje(viaje.id)}
+              {cargandoHistorial ? (
+                <Typography sx={{ color: "#999", textAlign: "center", py: 4 }}>
+                  Cargando historial...
+                </Typography>
+              ) : errorHistorial ?
+                  <Alert severity="error">{errorHistorial}</Alert> :
+                  viajesFiltrados.length === 0 ? (
+                <Typography sx={{ color: "#999", textAlign: "center", py: 4 }}>
+                  {filtroEstado
+                    ? `No hay viajes ${filtroEstado.toLowerCase()}`
+                    : "No hay viajes aún"}
+                </Typography>
+              ) : (
+                viajesFiltrados.map((viaje) => (
+                  <Card
+                    key={viaje.id}
+                    elevation={0}
+                    sx={{
+                      borderRadius: 3,
+                      border: "1px solid #ececec",
+                      bgcolor: "#fcfcfc",
+                    }}
+                  >
+                    <CardContent>
+                      <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={2}
                         sx={{
-                          textTransform: "none",
-                          color: "#111",
-                          fontWeight: 600,
+                          mb: 2,
+                          justifyContent: "space-between",
+                          alignItems: { xs: "stretch", sm: "center" },
                         }}
                       >
-                        Cancelar viaje
-                      </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Box>
+                          <Typography sx={{ fontWeight: 700, color: "#111" }}>
+                            {viaje.origen} → {viaje.destino}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: "#666", mt: 0.5 }}>
+                            Viaje #{viaje.id} · {formatearFecha(viaje.fechaCreacion)}
+                          </Typography>
+                        </Box>
+
+                        <Chip
+                          label={mapEstado(viaje.estado)}
+                          color={getStatusColor(mapEstado(viaje.estado)) as any}
+                          variant="outlined"
+                          sx={{ alignSelf: "flex-start" }}
+                        />
+                      </Stack>
+
+                      <Divider sx={{ my: 2 }} />
+
+                      <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
+                        <Button
+                          onClick={() => handleCancelarViaje(viaje.id)}
+                          disabled={loading || viaje.estado === "CANCELADO"}
+                          sx={{
+                            textTransform: "none",
+                            color: "#111",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {viaje.estado === "CANCELADO" ? "Cancelado" : "Cancelar viaje"}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </Stack>
           </Paper>
         </Grid>

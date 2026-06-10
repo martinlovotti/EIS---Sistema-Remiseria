@@ -1,6 +1,5 @@
 package ar.edu.unq.remiseria.controller;
 
-import ar.edu.unq.remiseria.controller.dto.UsuarioDTO.CrearUsuarioDTO;
 import ar.edu.unq.remiseria.controller.dto.UsuarioDTO.RecuperarUsuarioDTO;
 import ar.edu.unq.remiseria.controller.dto.ViajeDTO.RecuperarViajeDTO;
 import ar.edu.unq.remiseria.modelo.EstadoViaje;
@@ -21,20 +20,19 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     public UsuarioController(UsuarioService u){this.usuarioService = u;}
 
-    @PostMapping
-    public ResponseEntity<RecuperarUsuarioDTO> crearUsuario(@RequestBody CrearUsuarioDTO usuarioDTO){
-        Usuario usuario = usuarioDTO.aModelo();
-        usuarioService.crear(usuario);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(RecuperarUsuarioDTO.desdeModelo(usuario));
-
-    }
-
     @GetMapping("/{id}")
-    public ResponseEntity<?> recuperarUsuario(@PathVariable("id") Long id) {
+    public ResponseEntity<?> recuperarUsuario(@PathVariable Long id) {
         Usuario u = usuarioService.recuperar(id);
         return ResponseEntity.ok(RecuperarUsuarioDTO.desdeModelo(u));
+    }
+
+    @GetMapping("/{id}/viaje")
+    public ResponseEntity<List<RecuperarViajeDTO>> recuperarViajes(@PathVariable Long id) {
+        List<Viaje> viajes = usuarioService.recuperarTodosLosViajes(id);
+        List<RecuperarViajeDTO> dtos = viajes.stream()
+                .map(RecuperarViajeDTO::desdeModelo)
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}/viajes")

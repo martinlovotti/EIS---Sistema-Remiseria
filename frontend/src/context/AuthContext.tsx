@@ -5,11 +5,15 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { loginRequest, registerRequest } from "../api/auth";
+import {
+  loginRequest,
+  registerChoferRequest,
+  registerUsuarioRequest,
+} from "../api/auth";
 import type {
-  JwtPayload,
   LoginRequestDTO,
-  RegisterRequestDTO,
+  RegisterChoferRequestDTO,
+  RegisterUsuarioRequestDTO,
   Role,
 } from "../types/auth";
 
@@ -17,24 +21,15 @@ interface AuthContextType {
   token: string;
   role: Role | "";
   username: string;
+  entidadId: number | null;
   isAuthenticated: boolean;
   login: (credentials: LoginRequestDTO) => Promise<string>;
-  register: (data: RegisterRequestDTO) => Promise<void>;
+  registerUsuario: (data: RegisterUsuarioRequestDTO) => Promise<void>;
+  registerChofer: (data: RegisterChoferRequestDTO) => Promise<void>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-function decodeJwt(token: string): JwtPayload | null {
-  try {
-    const payload = token.split(".")[1];
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const json = atob(base64);
-    return JSON.parse(json) as JwtPayload;
-  } catch {
-    return null;
-  }
-}
 
 function getPathByRole(role: Role | ""): string {
   switch (role) {
@@ -52,58 +47,81 @@ function getPathByRole(role: Role | ""): string {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string>(localStorage.getItem("token") || "");
   const [role, setRole] = useState<Role | "">(
-    (localStorage.getItem("role") as Role) || ""
+      (localStorage.getItem("role") as Role) || ""
   );
   const [username, setUsername] = useState<string>(
-    localStorage.getItem("username") || ""
+      localStorage.getItem("username") || ""
   );
+  const [entidadId, setEntidadId] = useState<number | null>(() => {
+    const value = localStorage.getItem("entidadId");
+    return value ? Number(value) : null;
+  });
 
   const isAuthenticated = !!token;
 
   async function login(credentials: LoginRequestDTO): Promise<string> {
     const response = await loginRequest(credentials);
-    const newToken = response.token;
 
-    const decoded = decodeJwt(newToken);
-    const newRole = decoded?.role || "";
-    const newUsername = decoded?.sub || "";
+    const newToken = response.token;
+    const newRole = response.role;
+    const newEntidadId = response.entidadId;
+    const newUsername = credentials.username;
 
     localStorage.setItem("token", newToken);
     localStorage.setItem("role", newRole);
     localStorage.setItem("username", newUsername);
 
+    if (newEntidadId !== null && newEntidadId !== undefined) {
+      localStorage.setItem("entidadId", String(newEntidadId));
+    } else {
+      localStorage.removeItem("entidadId");
+    }
+
     setToken(newToken);
     setRole(newRole);
     setUsername(newUsername);
+    setEntidadId(newEntidadId ?? null);
 
     return getPathByRole(newRole);
   }
 
-  async function register(data: RegisterRequestDTO): Promise<void> {
-    await registerRequest(data);
+  async function registerUsuario(
+      data: RegisterUsuarioRequestDTO
+  ): Promise<void> {
+    await registerUsuarioRequest(data);
+  }
+
+  async function registerChofer(
+      data: RegisterChoferRequestDTO
+  ): Promise<void> {
+    await registerChoferRequest(data);
   }
 
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("username");
+    localStorage.removeItem("entidadId");
 
     setToken("");
     setRole("");
     setUsername("");
+    setEntidadId(null);
   }
 
   const value = useMemo(
-    () => ({
-      token,
-      role,
-      username,
-      isAuthenticated,
-      login,
-      register,
-      logout,
-    }),
-    [token, role, username, isAuthenticated]
+      () => ({
+        token,
+        role,
+        username,
+        entidadId,
+        isAuthenticated,
+        login,
+        registerUsuario,
+        registerChofer,
+        logout,
+      }),
+      [token, role, username, entidadId, isAuthenticated]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -111,8 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error("useAuth debe usarse dentro de AuthProvider");
   }
+
   return context;
 }

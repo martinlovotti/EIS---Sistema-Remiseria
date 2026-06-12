@@ -81,9 +81,9 @@ public class ViajeController {
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/solicitados")
+    @GetMapping
     public ResponseEntity<List<RecuperarViajeDTO>> viajesSolicitados() {
-        List<Viaje> viajesSolicitados =  viajeService.viajesSolicitados();
+        List<Viaje> viajesSolicitados =  viajeService.recuperarTodos();
         List<RecuperarViajeDTO> dtos = viajesSolicitados.stream().map(RecuperarViajeDTO::desdeModelo).toList();
         return ResponseEntity.ok(dtos);
     }

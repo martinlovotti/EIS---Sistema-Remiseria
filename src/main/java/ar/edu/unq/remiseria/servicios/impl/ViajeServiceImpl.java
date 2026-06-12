@@ -172,10 +172,9 @@ public class ViajeServiceImpl implements ViajeService {
     }
 
     @Override
-    public List<Viaje> viajesSolicitados() {
+    public List<Viaje> recuperarTodos() {
         List<ViajeSQL> viajesSQL = viajeDAO.findAll();
-        List<ViajeSQL> viajesSolicitados = viajesSQL.stream().filter(viajeSQL -> viajeSQL.getEstadoViaje() == EstadoViaje.PENDIENTE).toList();
 
-        return viajesSolicitados.stream().map(viajeMapper::toModel).toList();
+        return viajesSQL.stream().map(viajeMapper::toModel).toList();
     }
 }

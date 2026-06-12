@@ -22,5 +22,5 @@ public interface ViajeService {
 
     void calificarViaje(Long viajeId, Long usuarioId, Double calificacion);
 
-    List<Viaje> viajesSolicitados();
+    List<Viaje> recuperarTodos();
 }

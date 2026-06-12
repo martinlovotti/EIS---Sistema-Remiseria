@@ -1,4 +1,5 @@
 import { api } from './axios';
+import axios from 'axios';
 
 export type UsuarioDTO = {
   id: number;
@@ -25,8 +26,6 @@ export const getViajesDisponibles = async (): Promise<ViajeDTO[]> => {
   const response = await api.get<ViajeDTO[]>('/viaje/solicitados');
   return response.data;
 };
-
-import axios from 'axios';
 
 export const aceptarViaje = async (
   idViaje: number,
@@ -71,4 +70,9 @@ export const finalizarViaje = async (idViaje: number): Promise<void> => {
 
     throw new Error('Error inesperado', { cause: error });
   }
+};
+
+export const getViajes = async (): Promise<ViajeDTO[]> => {
+  const response = await api.get<ViajeDTO[]>('/viaje');
+  return response.data;
 };

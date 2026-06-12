@@ -14,8 +14,10 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+import { useAuth } from '../context/AuthContext';
+
 import {
-  getViajesDisponibles,
+  getViajes,
   aceptarViaje,
   iniciarViaje,
   finalizarViaje,
@@ -23,17 +25,19 @@ import {
 } from '../api/viaje';
 
 export default function ChoferPage() {
-  const [viajesDisponibles, setViajesDisponibles] = useState<ViajeDTO[]>([]);
+  const { entidadId } = useAuth();
+  const [viajes, setViajes] = useState<ViajeDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [viajeActivo, setViajeActivo] = useState<ViajeDTO | null>(null);
+  const [viajeIniciado, setViajeIniciado] = useState(false);
 
   useEffect(() => {
     const fetchViajes = async () => {
       try {
-        const viajes = await getViajesDisponibles();
-        setViajesDisponibles(viajes);
+        const viajes = await getViajes();
+        setViajes(viajes);
       } catch (error) {
         console.error(error);
       } finally {
@@ -44,12 +48,26 @@ export default function ChoferPage() {
     fetchViajes();
   }, []);
 
-  async function handleAceptarViaje(id: number) {
-    try {
-      const idChofer = 1;
-      await aceptarViaje(id, idChofer);
+  useEffect(() => {
+    const activo = viajes.find(
+      (v) =>
+        v.chofer?.id === entidadId &&
+        ['ACEPTADO', 'EN_CURSO'].includes(v.estado),
+    );
 
-      const viajeAceptado = viajesDisponibles.find((v) => v.id === id);
+    setViajeActivo(activo ?? null);
+    setViajeIniciado(activo?.estado === 'EN_CURSO');
+  }, [viajes, entidadId]);
+
+  async function handleAceptarViaje(id: number) {
+    console.log('aceptando viaje', id, entidadId);
+    try {
+      if (!entidadId) {
+        throw new Error('No se encontró el id del chofer');
+      }
+      await aceptarViaje(id, entidadId);
+
+      const viajeAceptado = viajes.find((v) => v.id === id);
 
       if (viajeAceptado) {
         setViajeActivo({
@@ -58,8 +76,8 @@ export default function ChoferPage() {
         });
       }
 
-      const viajes = await getViajesDisponibles();
-      setViajesDisponibles(viajes);
+      const viajesRecuperados = await getViajes();
+      setViajes(viajesRecuperados);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -71,6 +89,7 @@ export default function ChoferPage() {
   async function handleIniciarViaje(id: number) {
     try {
       await iniciarViaje(id);
+      setViajeIniciado(true);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -84,6 +103,10 @@ export default function ChoferPage() {
       await finalizarViaje(id);
 
       setViajeActivo(null);
+      setViajeIniciado(false);
+
+      const viajes = await getViajes();
+      setViajes(viajes);
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -122,77 +145,79 @@ export default function ChoferPage() {
               {loading ? (
                 <Typography>Cargando viajes...</Typography>
               ) : (
-                viajesDisponibles.map((viaje) => (
-                  <Card
-                    key={viaje.id}
-                    elevation={0}
-                    sx={{
-                      borderRadius: 3,
-                      border: '1px solid #ececec',
-                      bgcolor: '#fcfcfc',
-                    }}
-                  >
-                    <CardContent>
-                      <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={2}
-                        sx={{
-                          justifyContent: 'space-between',
-                          alignItems: { xs: 'flex-start', sm: 'center' },
-                        }}
-                      >
-                        <Box>
-                          <Typography sx={{ fontWeight: 700, color: '#111' }}>
-                            {viaje.origen} → {viaje.destino}
-                          </Typography>
-                          <Typography
-                            variant='body2'
-                            sx={{ color: '#666', mt: 0.5 }}
-                          >
-                            Pasajero: {viaje.usuario.nombre}
-                          </Typography>
-                          <Typography variant='body2' sx={{ color: '#666' }}>
-                            Viaje #{viaje.id}
-                          </Typography>
-                        </Box>
-
-                        <Chip
-                          label={viaje.estado}
-                          variant='outlined'
-                          sx={{ alignSelf: 'flex-start' }}
-                        />
-                      </Stack>
-
-                      <Divider sx={{ my: 2 }} />
-
-                      <Stack
-                        direction='row'
-                        sx={{
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        <Button
-                          variant='contained'
-                          onClick={() => handleAceptarViaje(viaje.id)}
+                viajes
+                  .filter((viaje) => viaje.estado === 'PENDIENTE')
+                  .map((viaje) => (
+                    <Card
+                      key={viaje.id}
+                      elevation={0}
+                      sx={{
+                        borderRadius: 3,
+                        border: '1px solid #ececec',
+                        bgcolor: '#fcfcfc',
+                      }}
+                    >
+                      <CardContent>
+                        <Stack
+                          direction={{ xs: 'column', sm: 'row' }}
+                          spacing={2}
                           sx={{
-                            bgcolor: '#111',
-                            color: '#fff',
-                            textTransform: 'none',
-                            fontWeight: 700,
-                            borderRadius: 2,
-                            boxShadow: 'none',
-                            '&:hover': {
-                              bgcolor: '#000',
-                              boxShadow: 'none',
-                            },
+                            justifyContent: 'space-between',
+                            alignItems: { xs: 'flex-start', sm: 'center' },
                           }}
                         >
-                          Aceptar viaje
-                        </Button>
-                      </Stack>
-                    </CardContent>
-                  </Card>
-                ))
+                          <Box>
+                            <Typography sx={{ fontWeight: 700, color: '#111' }}>
+                              {viaje.origen} → {viaje.destino}
+                            </Typography>
+                            <Typography
+                              variant='body2'
+                              sx={{ color: '#666', mt: 0.5 }}
+                            >
+                              Pasajero: {viaje.usuario.nombre}
+                            </Typography>
+                            <Typography variant='body2' sx={{ color: '#666' }}>
+                              Viaje #{viaje.id}
+                            </Typography>
+                          </Box>
+
+                          <Chip
+                            label={viaje.estado}
+                            variant='outlined'
+                            sx={{ alignSelf: 'flex-start' }}
+                          />
+                        </Stack>
+
+                        <Divider sx={{ my: 2 }} />
+
+                        <Stack
+                          direction='row'
+                          sx={{
+                            justifyContent: 'flex-end',
+                          }}
+                        >
+                          <Button
+                            variant='contained'
+                            onClick={() => handleAceptarViaje(viaje.id)}
+                            sx={{
+                              bgcolor: '#111',
+                              color: '#fff',
+                              textTransform: 'none',
+                              fontWeight: 700,
+                              borderRadius: 2,
+                              boxShadow: 'none',
+                              '&:hover': {
+                                bgcolor: '#000',
+                                boxShadow: 'none',
+                              },
+                            }}
+                          >
+                            Aceptar viaje
+                          </Button>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  ))
               )}
             </Stack>
           </Paper>
@@ -240,23 +265,25 @@ export default function ChoferPage() {
                     <Divider sx={{ my: 2 }} />
 
                     <Stack spacing={1.5}>
-                      <Button
-                        variant='outlined'
-                        fullWidth
-                        onClick={() => handleIniciarViaje(viajeActivo.id)}
-                        sx={{
-                          textTransform: 'none',
-                          borderColor: '#d0d0d0',
-                          color: '#111',
-                          fontWeight: 600,
-                          '&:hover': {
-                            borderColor: '#111',
-                            bgcolor: '#fafafa',
-                          },
-                        }}
-                      >
-                        Iniciar viaje
-                      </Button>
+                      {!viajeIniciado && (
+                        <Button
+                          variant='outlined'
+                          fullWidth
+                          onClick={() => handleIniciarViaje(viajeActivo.id)}
+                          sx={{
+                            textTransform: 'none',
+                            borderColor: '#d0d0d0',
+                            color: '#111',
+                            fontWeight: 600,
+                            '&:hover': {
+                              borderColor: '#111',
+                              bgcolor: '#fafafa',
+                            },
+                          }}
+                        >
+                          Iniciar viaje
+                        </Button>
+                      )}
 
                       <Button
                         variant='contained'

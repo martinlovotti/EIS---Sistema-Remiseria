@@ -78,11 +78,9 @@ export default function ChoferPage() {
 
       const viajesRecuperados = await getViajes();
       setViajes(viajesRecuperados);
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-        setOpenSnackbar(true);
-      }
+    } catch (error: any) {
+      setError(error.message);
+      setOpenSnackbar(true);
     }
   }
 
@@ -90,13 +88,13 @@ export default function ChoferPage() {
     try {
       await iniciarViaje(id);
       setViajeIniciado(true);
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-        setOpenSnackbar(true);
+    } catch (error: any) {
+      
+      setError(error.response.data.message);
+      setOpenSnackbar(true);
       }
     }
-  }
+  
 
   async function handleFinalizarViaje(id: number) {
     try {
@@ -109,7 +107,7 @@ export default function ChoferPage() {
       setViajes(viajes);
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setError(error.response.data.message);
         setOpenSnackbar(true);
       }
     }

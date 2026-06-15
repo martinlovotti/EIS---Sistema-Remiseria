@@ -35,7 +35,7 @@ export const aceptarViaje = async (
     await api.patch(`/viaje/${idViaje}/aceptarViaje/${idChofer}`);
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      throw new Error(error.response?.data ?? 'No se pudo aceptar el viaje', {
+      throw new Error(error.response?.data.message ?? 'No se pudo aceptar el viaje', {
         cause: error,
       });
     }

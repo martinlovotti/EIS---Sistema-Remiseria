@@ -7,11 +7,11 @@ import type {
 } from "../types/auth";
 
 function getErrorMessage(error: any, fallback: string): string {
-  return error.response?.data || fallback;
+  return error.response.data.message || fallback;
 }
 
 export async function loginRequest(
-    data: LoginRequestDTO
+  data: LoginRequestDTO
 ): Promise<LoginResponseDTO> {
   try {
     const response = await api.post<LoginResponseDTO>("/auth/login", data);

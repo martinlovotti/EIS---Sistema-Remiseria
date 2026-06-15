@@ -150,7 +150,7 @@ class AuthServiceImplTest {
                 () -> authService.login(login)
         );
 
-        assertEquals("Usuario no encontrado", ex.getMessage());
+        assertEquals("Usuario", ex.getMessage());
     }
 
     @Test

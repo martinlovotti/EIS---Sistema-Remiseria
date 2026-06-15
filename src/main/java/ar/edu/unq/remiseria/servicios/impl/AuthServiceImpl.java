@@ -79,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO request) {
         AuthUser user = authDAO.findByUsername(request.username())
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario"));
 
         if (!encoder.matches(request.password(), user.getPassword())) {
             throw new IllegalArgumentException("Password incorrecto");

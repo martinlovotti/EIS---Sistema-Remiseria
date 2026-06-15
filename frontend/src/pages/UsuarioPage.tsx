@@ -140,7 +140,7 @@ export default function UsuarioPage() {
     }
 
     const viajesOriginales = todosLosViajes.filter(
-      (v) => v.estado === estado
+      (v) => v.estado === estado.toUpperCase()
     );
     setViajesFiltrados(viajesOriginales);
     setFiltroEstado(estado);

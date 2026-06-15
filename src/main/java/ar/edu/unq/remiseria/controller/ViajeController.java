@@ -87,4 +87,11 @@ public class ViajeController {
         List<RecuperarViajeDTO> dtos = viajesSolicitados.stream().map(RecuperarViajeDTO::desdeModelo).toList();
         return ResponseEntity.ok(dtos);
     }
+  
+    @GetMapping("/consultar-precio")
+    public ResponseEntity<Double> consultarPrecio(@RequestParam String origen, @RequestParam String destino) {
+        Double precio = viajeService.consultarPrecio(origen, destino);
+        return ResponseEntity.ok(precio);
+    }
+
 }

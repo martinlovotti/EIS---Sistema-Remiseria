@@ -3,10 +3,8 @@ package ar.edu.unq.remiseria.servicios.impl;
 import ar.edu.unq.remiseria.exception.DestinoInvalidoException;
 import ar.edu.unq.remiseria.exception.OrigenInvalidoException;
 import ar.edu.unq.remiseria.exception.UsuarioConViajeSolicitadoException;
-import ar.edu.unq.remiseria.exception.ViajeNoPuedeSerAceptadoException;
 import ar.edu.unq.remiseria.exception.ViajeYaIniciadoException;
 import ar.edu.unq.remiseria.modelo.Chofer;
-import ar.edu.unq.remiseria.modelo.EstadoViaje;
 import ar.edu.unq.remiseria.modelo.Usuario;
 import ar.edu.unq.remiseria.modelo.Viaje;
 import ar.edu.unq.remiseria.persistencia.dao.ChoferDAO;
@@ -40,7 +38,8 @@ public class ViajeServiceImpl implements ViajeService {
     private final ChoferMapper choferMapper;
     private final DistanciaService distanciaService;
 
-    public ViajeServiceImpl(ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, ChoferDAO choferDAO, ViajeMapper viajeMapper, UsuarioMapper usuarioMapper, ChoferMapper choferMapper, DistanciaService distanciaService) {
+    public ViajeServiceImpl(ViajeDAO viajeDAO, UsuarioDAO usuarioDAO, ChoferDAO choferDAO, ViajeMapper viajeMapper,
+            UsuarioMapper usuarioMapper, ChoferMapper choferMapper, DistanciaService distanciaService) {
         this.viajeDAO = viajeDAO;
         this.usuarioDAO = usuarioDAO;
         this.choferDAO = choferDAO;
@@ -59,7 +58,6 @@ public class ViajeServiceImpl implements ViajeService {
             throw new UsuarioConViajeSolicitadoException();
         }
 
-
         // Calcular distancia y tarifa
         Double km = distanciaService.calcularDistanciaKm(viaje.getOrigen(), viaje.getDestino());
         double tarifaBase = 200.0;
@@ -69,13 +67,11 @@ public class ViajeServiceImpl implements ViajeService {
         viaje.setKilometros(km);
         viaje.setPrecioFinal(precioFinal);
 
-
-
-        //guardar el viaje (sin la referencia circular del usuario)
+        // guardar el viaje (sin la referencia circular del usuario)
         ViajeSQL viajeSQL = viajeMapper.fromModel(viaje);
         ViajeSQL viajeGuardado = viajeDAO.save(viajeSQL);
 
-        //después asociar el viaje al usuario y guardarlo
+        // después asociar el viaje al usuario y guardarlo
         Viaje viajeConId = viajeMapper.toModel(viajeGuardado);
         usuarioModelo.solicitarViaje(viajeConId);
         usuarioDAO.save(usuarioMapper.fromModel(usuarioModelo));
@@ -91,6 +87,9 @@ public class ViajeServiceImpl implements ViajeService {
         viaje.cancelar();
 
         UsuarioSQL usuarioSQL = usuarioDAO.save(usuarioMapper.fromModel(viaje.getCliente()));
+        if (!isNull(viaje.getChofer())) {
+            choferDAO.save(choferMapper.fromModel(viaje.getChofer()));
+        }
         viajeSQL = viajeMapper.fromModel(viaje);
         viajeSQL.setCliente(usuarioSQL);
         viajeDAO.save(viajeSQL);
@@ -118,8 +117,10 @@ public class ViajeServiceImpl implements ViajeService {
             throw new OrigenInvalidoException();
         }
 
-        // Solo se modifican las direcciones de origen y destino, los kilómetros y el precio del viaje se calcularían en
-        // base a estos datos que, en un futuro, se volverían mas complejos que un String (Spoiler: no va a pasar)
+        // Solo se modifican las direcciones de origen y destino, los kilómetros y el
+        // precio del viaje se calcularían en
+        // base a estos datos que, en un futuro, se volverían mas complejos que un
+        // String (Spoiler: no va a pasar)
 
         viajeExistente.setOrigen(viaje.getOrigen());
         viajeExistente.setDestino(viaje.getDestino());
@@ -159,16 +160,18 @@ public class ViajeServiceImpl implements ViajeService {
         Viaje viaje = viajeMapper.toModel(viajeSQL);
 
         viaje.finalizarViaje();
-        //Si lo puede finalizar el viajeActual de chofer y user queda null y
-        // continua con las lineas de debajo donde guarda las entidades actualizadas por el metodo
+        // Si lo puede finalizar el viajeActual de chofer y user queda null y
+        // continua con las lineas de debajo donde guarda las entidades actualizadas por
+        // el metodo
 
         ChoferSQL choferSQL = choferMapper.fromModel(viaje.getChofer());
         UsuarioSQL usuarioSQL = usuarioMapper.fromModel(viaje.getCliente());
         viajeSQL = viajeMapper.fromModel(viaje);
         viajeSQL.setChofer(choferDAO.save(choferSQL));
         viajeSQL.setCliente(usuarioDAO.save(usuarioSQL));
-        //Se podrian no usar estas 2 variables y pasarla directamente al dao con el get pero para
-        //que quede mas legible lo que guarda cada dao
+        // Se podrian no usar estas 2 variables y pasarla directamente al dao con el get
+        // pero para
+        // que quede mas legible lo que guarda cada dao
 
         viajeDAO.save(viajeSQL);
 
@@ -192,7 +195,7 @@ public class ViajeServiceImpl implements ViajeService {
 
         return viajesSQL.stream().map(viajeMapper::toModel).toList();
     }
-  
+
     public Double consultarPrecio(String origen, String destino) {
         Double km = distanciaService.calcularDistanciaKm(origen, destino);
         double tarifaBase = 200.0;

@@ -2,6 +2,8 @@ package ar.edu.unq.remiseria.servicios.interfaces;
 
 import ar.edu.unq.remiseria.modelo.Viaje;
 
+import java.util.List;
+
 
 public interface ViajeService {
     Viaje editarViaje(Long viajeId, Viaje viaje);
@@ -20,5 +22,7 @@ public interface ViajeService {
 
     void calificarViaje(Long viajeId, Long usuarioId, Double calificacion);
 
+    List<Viaje> recuperarTodos();
+  
     Double consultarPrecio(String origen, String destino);
 }

@@ -23,6 +23,8 @@ import ar.edu.unq.remiseria.servicios.interfaces.ViajeService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 import static ar.edu.unq.remiseria.modelo.EstadoViaje.ACEPTADO;
 import static java.util.Objects.isNull;
 
@@ -184,6 +186,13 @@ public class ViajeServiceImpl implements ViajeService {
 
     }
 
+    @Override
+    public List<Viaje> recuperarTodos() {
+        List<ViajeSQL> viajesSQL = viajeDAO.findAll();
+
+        return viajesSQL.stream().map(viajeMapper::toModel).toList();
+    }
+  
     public Double consultarPrecio(String origen, String destino) {
         Double km = distanciaService.calcularDistanciaKm(origen, destino);
         double tarifaBase = 200.0;

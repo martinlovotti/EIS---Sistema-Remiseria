@@ -283,7 +283,7 @@ export default function ChoferPage() {
                         </Button>
                       )}
 
-                      <Button
+                      {viajeIniciado && <Button
                         variant='contained'
                         fullWidth
                         onClick={() => handleFinalizarViaje(viajeActivo.id)}
@@ -301,7 +301,7 @@ export default function ChoferPage() {
                         }}
                       >
                         Finalizar viaje
-                      </Button>
+                      </Button>}
                     </Stack>
                   </CardContent>
                 </Card>

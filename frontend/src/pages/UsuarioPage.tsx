@@ -38,12 +38,18 @@ function mapEstado(estadoBackend: string): string {
 function formatearFecha(fechaCreacion?: string): string {
   if (!fechaCreacion) return "";
   try {
-    const fecha = new Date(fechaCreacion);
+    [date, time] = fechaCreacion.split(" ")
+    [year, month, day] = date.split("/")
+    [hour, minute] = time.split(":")
+    const fecha = new Date(year, month-1, day, hour, minute);
     return fecha.toLocaleDateString("es-AR", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    });
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    })
   } catch {
     return fechaCreacion;
   }

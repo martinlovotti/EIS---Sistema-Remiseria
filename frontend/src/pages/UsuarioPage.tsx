@@ -378,7 +378,7 @@ export default function UsuarioPage() {
                       <Stack direction="row" sx={{ justifyContent: "flex-end" }}>
                         <Button
                           onClick={() => handleCancelarViaje(viaje.id)}
-                          disabled={loading || viaje.estado === "CANCELADO" || viaje.estado === "FINALIZADO"}
+                          disabled={loading || viaje.estado === "CANCELADO" || viaje.estado === "FINALIZADO" || viaje.estado === "EN_CURSO"}
                           sx={{
                             textTransform: "none",
                             color: "#111",

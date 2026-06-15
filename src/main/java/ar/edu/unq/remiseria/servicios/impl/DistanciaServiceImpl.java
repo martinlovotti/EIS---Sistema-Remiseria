@@ -1,7 +1,7 @@
 package ar.edu.unq.remiseria.servicios.impl;
 
+import ar.edu.unq.remiseria.exception.UbicacionesInvalidasException;
 import ar.edu.unq.remiseria.servicios.interfaces.DistanciaService;
-
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -28,7 +28,7 @@ public class DistanciaServiceImpl implements DistanciaService {
             return calcularDistancia(coordOrigen, coordDestino);
 
         } catch (Exception e) {
-            throw new RuntimeException("Error calculando distancia", e);
+            throw new UbicacionesInvalidasException();
         }
     }
 
@@ -48,7 +48,7 @@ public class DistanciaServiceImpl implements DistanciaService {
 
         double lon = coords.get(0).asDouble();
         double lat = coords.get(1).asDouble();
-        return new double[]{lon, lat};
+        return new double[] { lon, lat };
     }
 
     private double calcularDistancia(double[] origen, double[] destino) throws Exception {
@@ -71,4 +71,3 @@ public class DistanciaServiceImpl implements DistanciaService {
         return distanciaMetros / 1000.0; // km
     }
 }
-

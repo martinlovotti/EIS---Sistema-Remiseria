@@ -41,6 +41,8 @@ public class ViajeSQL {
 
     @PrePersist
     protected void onCreate() {
-        fechaCreacion = LocalDateTime.now();
+        if (fechaCreacion == null) {
+            fechaCreacion = LocalDateTime.now();
+        }
     }
 }
